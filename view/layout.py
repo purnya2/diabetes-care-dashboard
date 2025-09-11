@@ -4,7 +4,7 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 from flask_login import current_user
 
-from .modals import (
+from view.modals import (
     create_delete_user_modal, create_promote_user_modal,
     create_project_modal, create_add_member_modal, create_close_project_modal,
     create_delete_project_modal
@@ -17,11 +17,11 @@ def get_app_layout():
         dcc.Location(id='url', refresh=True),
         html.Div(id='navbar-container'),
         html.Div(id='page-content', className='container mt-4'),
-        
+
         # Hidden containers for storing state
         dcc.Store(id='selected-user-id'),
         dcc.Store(id='selected-project-id'),
-        
+
         # Modals for various actions
         create_delete_user_modal(),
         create_promote_user_modal(),

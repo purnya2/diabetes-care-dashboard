@@ -4,8 +4,11 @@ import dash
 def register_callbacks(app):
     """Register all callbacks for the app"""
     # Import and register callbacks from each module
-    from .auth import register_auth_callbacks
-    from .routing import register_routing_callbacks
+    from controller.auth import register_auth_callbacks
+    from controller.admin import register_admin_callbacks
+    from controller.projects import register_project_callbacks
+    from controller.project_detail import register_project_detail_callbacks
+    from controller.routing import register_routing_callbacks
 
     # Register navbar callback (kept here since it's simple)
     @app.callback(
@@ -18,4 +21,7 @@ def register_callbacks(app):
 
     # Register callbacks from each module
     register_auth_callbacks(app)
+    register_admin_callbacks(app)
+    register_project_callbacks(app)
+    register_project_detail_callbacks(app)
     register_routing_callbacks(app)
