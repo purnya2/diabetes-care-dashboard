@@ -22,6 +22,8 @@ def get_user(user_id):
         return User[int(user_id)]
     except (ValueError, TypeError):
         return None
+    except Exception:  # This catches ObjectNotFound and any other Pony ORM exceptions
+        return None
 
 @db_session
 def get_user_by_username(username):
@@ -98,6 +100,8 @@ def get_project(project_id):
     try:
         return Project[int(project_id)]
     except (ValueError, TypeError):
+        return None
+    except Exception:  # This catches ObjectNotFound and any other Pony ORM exceptions
         return None
 
 @db_session

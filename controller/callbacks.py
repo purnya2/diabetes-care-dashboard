@@ -10,14 +10,19 @@ def register_callbacks(app):
     from controller.project_detail import register_project_detail_callbacks
     from controller.routing import register_routing_callbacks
 
-    # Register navbar callback (kept here since it's simple)
     @app.callback(
         dash.Output('navbar-container', 'children'),
         dash.Input('url', 'pathname')
     )
     def update_navbar(pathname):
         from view import get_navbar
-        return get_navbar()
+        try:
+            return get_navbar()
+        except Exception :
+
+            from flask_login import logout_user
+            logout_user()
+            return get_navbar()
 
     # Register callbacks from each module
     register_auth_callbacks(app)
