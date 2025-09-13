@@ -299,3 +299,8 @@ def get_alerts_monitoring_tab():
             ], width=12)
         ])
     ])
+
+'''
+    Questo file (doctor_dashboard.py) contiene l'interfaccia della dashboard del dottore.
+    Include sezioni per gestione pazienti, monitoraggio compliance e analisi degli alert.
+'''

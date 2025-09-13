@@ -16,3 +16,8 @@ def configure_db():
     db_path = os.path.join(data_dir, 'app_database.sqlite')
     db.bind(provider='sqlite', filename=db_path, create_db=True)
     db.generate_mapping(create_tables=True)
+
+'''
+    Questo file (database.py) gestisce la configurazione del database per l'applicazione.
+    Inizializza Pony ORM e configura il database SQLite nella cartella 'data'.
+'''

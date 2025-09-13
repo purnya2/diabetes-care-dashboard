@@ -93,3 +93,9 @@ class Alert(db.Entity):
     created_at = Required(datetime)
     is_read = Required(bool, default=False)
     resolved_at = Optional(datetime)
+
+'''
+    Questo file (user.py) definisce i modelli del database per gli utenti del sistema.
+    Contiene le classi User (utente base), Patient (paziente) e Doctor (dottore) con 
+    tutte le loro proprietà e relazioni per gestire il sistema di telemedicina diabetica.
+'''

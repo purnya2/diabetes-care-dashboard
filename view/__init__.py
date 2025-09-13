@@ -13,3 +13,8 @@ __all__ = [
     'get_patient_dashboard_layout', 'get_doctor_dashboard_layout',
     'create_user_info_display'
 ]
+
+'''
+    Questo file (__init__.py) del modulo view espone tutti i layout e componenti dell'interfaccia utente.
+    Centralizza l'accesso alle viste per autenticazione, dashboard pazienti/dottori e navigazione.
+'''

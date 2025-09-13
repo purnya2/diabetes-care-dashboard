@@ -74,3 +74,8 @@ def get_register_layout():
             html.Div(id='register-output', className='mt-3')
         ])
     ])
+
+'''
+    Questo file (auth.py) gestisce le viste per l'autenticazione degli utenti.
+    Contiene i layout per le pagine di login e registrazione del sistema.
+'''

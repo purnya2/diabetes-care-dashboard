@@ -296,3 +296,8 @@ def get_glucose_status(value, is_before_meal):
             return "High"
         else:
             return "Normal"
+
+'''
+    Questo file (patient_callbacks.py) contiene i callback per la dashboard del paziente.
+    Gestisce logging glicemia, sintomi, aderenza terapie e visualizzazione degli alert.
+'''

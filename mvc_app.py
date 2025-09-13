@@ -43,3 +43,8 @@ if __name__ == '__main__':
     print("Starting Dash MVC Application...")
     print("Access the application at http://127.0.0.1:8050/")
     app.run(debug=True)
+
+'''
+    Questo file (mvc_app.py) è il punto di ingresso principale dell'applicazione.
+    Configura Dash, il database, l'autenticazione e avvia il server dell'app.
+'''

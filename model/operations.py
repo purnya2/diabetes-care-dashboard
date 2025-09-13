@@ -272,3 +272,9 @@ def check_glucose_alerts(patient_id):
                 severity,
                 patient.assigned_doctor.id if patient.assigned_doctor else None
             )
+
+'''
+    Questo file (operations.py) contiene tutte le operazioni del database per il sistema.
+    Include funzioni per gestire utenti, pazienti, dottori, letture della glicemia, 
+    terapie, aderenza ai farmaci e sistema di allerte mediche.
+'''

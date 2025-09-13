@@ -29,3 +29,8 @@ __all__ = [
     'get_patient_active_therapies', 'record_medication_intake', 'add_symptom',
     'create_alert', 'get_unread_alerts', 'check_glucose_alerts'
 ]
+
+'''
+    Questo file (__init__.py) del modulo model configura e espone tutte le funzionalità del database.
+    Importa entità, operazioni e inizializza il sistema di persistenza per l'app diabetologica.
+'''

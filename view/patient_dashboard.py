@@ -211,3 +211,8 @@ def get_alerts_tab():
         html.H4("My Alerts & Notifications"),
         html.Div(id="patient-alerts-list")
     ])
+
+'''
+    Questo file (patient_dashboard.py) contiene l'interfaccia della dashboard del paziente.
+    Include tab per registrazione glicemia, gestione terapie e visualizzazione allerte.
+'''

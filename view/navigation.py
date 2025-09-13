@@ -49,3 +49,8 @@ def get_navbar():
             className="mb-3"
         )
     return navbar
+
+'''
+    Questo file (navigation.py) gestisce la barra di navigazione dell'applicazione.
+    Crea navbar dinamiche basate sul ruolo dell'utente (paziente o dottore).
+'''

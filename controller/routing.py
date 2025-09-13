@@ -79,3 +79,8 @@ def register_routing_callbacks(app):
         
         # Default home page
         return get_home_layout(), dash.no_update
+
+'''
+    Questo file (routing.py) gestisce il routing dell'applicazione.
+    Controlla l'accesso alle pagine in base all'autenticazione e ruolo degli utenti.
+'''

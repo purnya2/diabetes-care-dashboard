@@ -80,3 +80,8 @@ def register_auth_callbacks(app):
             if user:
                 return create_user_info_display(user.username)
         return ''
+
+'''
+    Questo file (auth.py) gestisce i callback per l'autenticazione degli utenti.
+    Include funzioni per login, registrazione e visualizzazione delle informazioni utente.
+'''

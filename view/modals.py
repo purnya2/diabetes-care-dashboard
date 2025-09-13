@@ -81,3 +81,8 @@ def create_patient_note_modal():
             dbc.Button("Save Note", id="confirm-note", color="success"),
         ]),
     ], id="patient-note-modal")
+
+'''
+    Questo file (modals.py) contiene i componenti modali per l'interfaccia utente.
+    Include modali per eliminazione utenti, gestione terapie e note sui pazienti.
+'''

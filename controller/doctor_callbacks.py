@@ -429,3 +429,8 @@ def get_glucose_status(value, is_before_meal):
             return "High"
         else:
             return "Normal"
+
+'''
+    Questo file (doctor_callbacks.py) contiene i callback per la dashboard del dottore.
+    Gestisce visualizzazione pazienti, prescrizione terapie, note mediche e monitoraggio compliance.
+'''

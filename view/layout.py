@@ -107,3 +107,8 @@ def get_profile_layout():
         html.P('This is your profile page. Here you can view your account details.'),
         html.Div(id='user-info')
     ])
+
+'''
+    Questo file (layout.py) definisce i layout principali dell'applicazione.
+    Contiene la struttura generale dell'app e i layout per le pagine home e profilo.
+'''

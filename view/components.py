@@ -10,3 +10,8 @@ def create_user_info_display(username):
         dbc.Button('Edit Profile', id='edit-profile-button', color='primary', className='mr-2 me-2'),
         dbc.Button('Change Password', id='change-password-button', color='secondary')
     ])
+
+'''
+    Questo file (components.py) contiene componenti UI riutilizzabili per l'applicazione.
+    Include elementi comuni dell'interfaccia utente come display delle informazioni utente.
+'''
