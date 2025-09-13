@@ -4,11 +4,7 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 from flask_login import current_user
 
-from view.modals import (
-    create_delete_user_modal, create_promote_user_modal,
-    create_project_modal, create_add_member_modal, create_close_project_modal,
-    create_delete_project_modal
-)
+from view.modals import create_delete_user_modal
 
 # Main app layout
 def get_app_layout():
@@ -20,32 +16,54 @@ def get_app_layout():
 
         # Hidden containers for storing state
         dcc.Store(id='selected-user-id'),
-        dcc.Store(id='selected-project-id'),
 
-        # Modals for various actions
-        create_delete_user_modal(),
-        create_promote_user_modal(),
-        create_project_modal(),
-        create_add_member_modal(),
-        create_close_project_modal(),
-        create_delete_project_modal()
+        # Modals for user management only
+        create_delete_user_modal()
     ])
 
 # Home page layout
 def get_home_layout():
     """Returns the home page layout"""
     return html.Div([
-        html.H1('Welcome to the Dash Multi-Page App'),
-        html.P('This is a template for a multi-page Dash application with authentication.'),
-        html.Ul([
-            html.Li('Multiple pages with URL routing'),
-            html.Li('User authentication with login/logout'),
-            html.Li('Dynamic navigation based on login status'),
-            html.Li('Protected routes for authenticated users only'),
-            html.Li('Admin capabilities for user management'),
-            html.Li('Project management functionality'),
-            html.Li('Pony ORM with SQLite database')
-        ])
+        html.H1('Diabetes Care Telemedicine System', className='text-center mb-4'),
+        html.P('Welcome to the Diabetes Care Management Platform', className='lead text-center mb-5'),
+        
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader("For Patients"),
+                    dbc.CardBody([
+                        html.H4("Manage Your Diabetes", className="card-title"),
+                        html.Ul([
+                            html.Li('Log daily glucose readings (before and after meals)'),
+                            html.Li('Track symptoms and medication intake'),
+                            html.Li('Receive alerts for abnormal readings'),
+                            html.Li('Communicate with your diabetologist')
+                        ]),
+                        dbc.Button("Patient Login", color="primary", href="/login", className="mt-3")
+                    ])
+                ])
+            ], width=6),
+            
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader("For Doctors"),
+                    dbc.CardBody([
+                        html.H4("Monitor Your Patients", className="card-title"),
+                        html.Ul([
+                            html.Li('View patient glucose data and trends'),
+                            html.Li('Prescribe and manage therapies'),
+                            html.Li('Monitor medication compliance'),
+                            html.Li('Receive alerts for critical glucose levels'),
+                            html.Li('Update patient medical information')
+                        ]),
+                        dbc.Button("Doctor Login", color="success", href="/login", className="mt-3")
+                    ])
+                ])
+            ], width=6)
+        ], className="mb-5"),
+        
+        
     ])
 
 # Dashboard page layout (protected)
@@ -64,19 +82,18 @@ def get_dashboard_layout():
                 ])
             ]), width=4),
             dbc.Col(dbc.Card([
-                dbc.CardHeader('My Projects'),
+                dbc.CardHeader('Health Monitoring'),
                 dbc.CardBody([
-                    html.H4('Project Management', className='card-title'),
-                    html.P('View and manage your projects.'),
-                    dbc.Button('View Projects', href='/projects', color='primary')
+                    html.H4('Diabetes Management', className='card-title'),
+                    html.P('Track glucose, medications, and symptoms.'),
+                    dbc.Button('View Dashboard', href='/patient' if hasattr(current_user, 'role') and current_user.role == 'patient' else '/doctor', color='primary')
                 ])
             ]), width=4),
             dbc.Col(dbc.Card([
-                dbc.CardHeader('Admin Panel' if hasattr(current_user, 'is_admin') and current_user.is_admin else 'Notifications'),
+                dbc.CardHeader('Health Alerts'),
                 dbc.CardBody([
-                    html.H4('Admin Tools' if hasattr(current_user, 'is_admin') and current_user.is_admin else 'System Notifications', className='card-title'),
-                    html.P('Manage users and system settings.' if hasattr(current_user, 'is_admin') and current_user.is_admin else 'You have no new notifications.'),
-                    dbc.Button('Go to Admin Panel', href='/admin', color='primary') if hasattr(current_user, 'is_admin') and current_user.is_admin else html.Div()
+                    html.H4('Recent Alerts', className='card-title'),
+                    html.P('Monitor your glucose level alerts.'),
                 ])
             ]), width=4)
         ])

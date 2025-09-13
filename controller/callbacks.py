@@ -5,9 +5,8 @@ def register_callbacks(app):
     """Register all callbacks for the app"""
     # Import and register callbacks from each module
     from controller.auth import register_auth_callbacks
-    from controller.admin import register_admin_callbacks
-    from controller.projects import register_project_callbacks
-    from controller.project_detail import register_project_detail_callbacks
+    from controller.patient_callbacks import register_patient_callbacks
+    from controller.doctor_callbacks import register_doctor_callbacks
     from controller.routing import register_routing_callbacks
 
     @app.callback(
@@ -19,14 +18,12 @@ def register_callbacks(app):
         try:
             return get_navbar()
         except Exception :
-
             from flask_login import logout_user
             logout_user()
             return get_navbar()
 
     # Register callbacks from each module
     register_auth_callbacks(app)
-    register_admin_callbacks(app)
-    register_project_callbacks(app)
-    register_project_detail_callbacks(app)
+    register_patient_callbacks(app)
+    register_doctor_callbacks(app)
     register_routing_callbacks(app)

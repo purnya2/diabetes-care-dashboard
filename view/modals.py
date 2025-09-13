@@ -7,91 +7,77 @@ def create_delete_user_modal():
     """Creates a confirmation modal for deleting users"""
     return dbc.Modal([
         dbc.ModalHeader("Confirm Deletion"),
-        dbc.ModalBody("Are you sure you want to delete this user? All their projects will also be deleted."),
+        dbc.ModalBody("Are you sure you want to delete this user? All their medical data will also be deleted."),
         dbc.ModalFooter([
             dbc.Button("Cancel", id="cancel-delete-user", className="ms-auto", color="secondary"),
             dbc.Button("Delete", id="confirm-delete-user", color="danger"),
         ]),
     ], id="delete-user-modal")
 
-def create_promote_user_modal():
-    """Creates a confirmation modal for promoting users to admin"""
+def create_therapy_modal():
+    """Creates a modal for creating/editing therapy prescriptions"""
     return dbc.Modal([
-        dbc.ModalHeader("Confirm Promotion"),
-        dbc.ModalBody("Are you sure you want to promote this user to an administrator?"),
-        dbc.ModalFooter([
-            dbc.Button("Cancel", id="cancel-promote-user", className="ms-auto", color="secondary"),
-            dbc.Button("Promote", id="confirm-promote-user", color="info"),
-        ]),
-    ], id="promote-user-modal")
-
-def create_project_modal():
-    """Creates a modal for creating a new project"""
-    return dbc.Modal([
-        dbc.ModalHeader("Create New Project"),
+        dbc.ModalHeader("Manage Therapy"),
         dbc.ModalBody([
             dbc.Form([
                 dbc.Row([
                     dbc.Col([
-                        dbc.Label("Project Name"),
-                        dbc.Input(id="project-name", type="text", placeholder="Enter project name"),
+                        dbc.Label("Medication Name"),
+                        dbc.Input(id="therapy-medication", type="text", placeholder="Enter medication name"),
                     ])
                 ], className="mb-3"),
                 dbc.Row([
                     dbc.Col([
-                        dbc.Label("Start Date"),
-                        dbc.Input(id="project-start-date", type="date", value=date.today().isoformat()),
+                        dbc.Label("Dosage"),
+                        dbc.Input(id="therapy-dosage", type="text", placeholder="e.g., 10mg"),
+                    ], width=6),
+                    dbc.Col([
+                        dbc.Label("Frequency"),
+                        dbc.Input(id="therapy-frequency", type="text", placeholder="e.g., Twice daily"),
+                    ], width=6),
+                ], className="mb-3"),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Label("Instructions"),
+                        dbc.Textarea(id="therapy-instructions", placeholder="Special instructions for the patient"),
                     ])
                 ]),
             ])
         ]),
         dbc.ModalFooter([
-            dbc.Button("Cancel", id="cancel-create-project", className="ms-auto", color="secondary"),
-            dbc.Button("Create", id="confirm-create-project", color="success"),
+            dbc.Button("Cancel", id="cancel-therapy", className="ms-auto", color="secondary"),
+            dbc.Button("Save", id="confirm-therapy", color="success"),
         ]),
-    ], id="create-project-modal")
+    ], id="therapy-modal")
 
-def create_add_member_modal():
-    """Creates a modal for adding members to a project"""
+def create_glucose_alert_modal():
+    """Creates a modal for glucose level alerts"""
     return dbc.Modal([
-        dbc.ModalHeader("Add Member to Project"),
+        dbc.ModalHeader("Glucose Level Alert"),
         dbc.ModalBody([
-            html.Div(id="add-member-content"),
+            html.Div(id="alert-content"),
         ]),
         dbc.ModalFooter([
-            dbc.Button("Cancel", id="cancel-add-member", className="ms-auto", color="secondary"),
-            dbc.Button("Add", id="confirm-add-member", color="success"),
+            dbc.Button("Acknowledge", id="acknowledge-alert", color="primary"),
         ]),
-    ], id="add-member-modal")
+    ], id="glucose-alert-modal")
 
-def create_close_project_modal():
-    """Creates a modal for closing a project"""
+def create_patient_note_modal():
+    """Creates a modal for adding doctor notes about patients"""
     return dbc.Modal([
-        dbc.ModalHeader("Close Project"),
+        dbc.ModalHeader("Add Patient Note"),
         dbc.ModalBody([
             dbc.Form([
                 dbc.Row([
                     dbc.Col([
-                        dbc.Label("End Date"),
-                        dbc.Input(id="project-end-date", type="date", value=date.today().isoformat()),
+                        dbc.Label("Note"),
+                        dbc.Textarea(id="patient-note", placeholder="Enter observations or recommendations", rows=5),
                     ])
                 ]),
-                html.Div(id="close-project-error", className="text-danger mt-2")
             ])
         ]),
         dbc.ModalFooter([
-            dbc.Button("Cancel", id="cancel-close-project", className="ms-auto", color="secondary"),
-            dbc.Button("Close Project", id="confirm-close-project", color="warning"),
+            dbc.Button("Cancel", id="cancel-note", className="ms-auto", color="secondary"),
+            dbc.Button("Save Note", id="confirm-note", color="success"),
         ]),
-    ], id="close-project-modal")
-
-def create_delete_project_modal():
-    """Creates a confirmation modal for deleting a project"""
-    return dbc.Modal([
-        dbc.ModalHeader("Confirm Project Deletion"),
-        dbc.ModalBody("Are you sure you want to delete this project? This action cannot be undone and all project data will be permanently lost."),
-        dbc.ModalFooter([
-            dbc.Button("Cancel", id="cancel-delete-project", className="ms-auto", color="secondary"),
-            dbc.Button("Delete", id="confirm-delete-project", color="danger"),
-        ]),
-    ], id="delete-project-modal")
+    ], id="patient-note-modal")

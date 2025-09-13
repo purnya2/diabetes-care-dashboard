@@ -27,7 +27,13 @@ def register_auth_callbacks(app):
         user = validate_user(username, password)
         if user:
             login_user(user)
-            return dbc.Alert('Login successful!', color='success'), '/dashboard'
+            # Redirect based on user role
+            if user.role == 'patient':
+                return dbc.Alert('Login successful!', color='success'), '/patient-dashboard'
+            elif user.role == 'doctor':
+                return dbc.Alert('Login successful!', color='success'), '/doctor-dashboard'
+            else:
+                return dbc.Alert('Login successful!', color='success'), '/dashboard'
         else:
             return dbc.Alert('Invalid username or password', color='danger'), dash.no_update
     
@@ -39,19 +45,23 @@ def register_auth_callbacks(app):
         [State('register-username', 'value'),
          State('register-password', 'value'),
          State('register-confirm-password', 'value'),
-         State('register-email', 'value')],
+         State('register-role', 'value')],
         prevent_initial_call=True
     )
     @db_session
-    def register_callback(n_clicks, username, password, confirm_password, email):
+    def register_callback(n_clicks, username, password, confirm_password, role):
         if not n_clicks or not username or not password or not confirm_password:
             return '', dash.no_update
         
         if password != confirm_password:
             return dbc.Alert('Passwords do not match', color='danger'), dash.no_update
         
-        # Try to add the user with the optional email
-        if add_user(username, password, email):
+        # Default role to patient if none specified
+        if not role:
+            role = 'patient'
+        
+        # Try to add the user with the specified role
+        if add_user(username, password, role):
             return dbc.Alert('Registration successful! Please log in.', color='success'), '/login'
         else:
             return dbc.Alert('Username already exists', color='danger'), dash.no_update
@@ -68,5 +78,5 @@ def register_auth_callbacks(app):
             from view import create_user_info_display
             user = get_user_by_username(current_user.username)
             if user:
-                return create_user_info_display(user.username, user.email, user.is_admin)
+                return create_user_info_display(user.username)
         return ''

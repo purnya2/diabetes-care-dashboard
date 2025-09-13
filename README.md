@@ -1,1 +1,2 @@
-# Diabeters Care Dashboard
+# Diabetes Care Telemedicine System
+

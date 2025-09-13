@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 def get_login_layout():
     """Returns the login page layout"""
     return html.Div([
-        html.H2('Login', className='mb-4'),
+        html.H2('Diabetes Care System - Login', className='mb-4'),
         dbc.Form([
             dbc.Row([
                 dbc.Col([
@@ -21,15 +21,23 @@ def get_login_layout():
                 ])
             ], className='mb-3'),
             dbc.Button('Login', id='login-button', color='primary', className='mt-3'),
-            html.Div(id='login-output', className='mt-3')
+            html.Div(id='login-output', className='mt-3'),
+            html.Hr(),
+            html.P([
+                "Demo accounts: ",
+                html.Br(),
+                "Patient: patient1 / patientpass",
+                html.Br(),
+                "Doctor: dr_smith / doctorpass"
+            ], className='text-muted mt-3')
         ])
     ])
 
-# Register page layout with added email field
+# Register page layout with role selection
 def get_register_layout():
     """Returns the register page layout"""
     return html.Div([
-        html.H2('Register', className='mb-4'),
+        html.H2('Register - Diabetes Care System', className='mb-4'),
         dbc.Form([
             dbc.Row([
                 dbc.Col([
@@ -39,8 +47,15 @@ def get_register_layout():
             ], className='mb-3'),
             dbc.Row([
                 dbc.Col([
-                    dbc.Label('Email'),
-                    dbc.Input(id='register-email', type='email', placeholder='Enter your email (optional)')
+                    dbc.Label('Role'),
+                    dbc.Select(
+                        id='register-role',
+                        options=[
+                            {'label': 'Patient', 'value': 'patient'},
+                            {'label': 'Doctor', 'value': 'doctor'}
+                        ],
+                        value='patient'
+                    )
                 ])
             ], className='mb-3'),
             dbc.Row([

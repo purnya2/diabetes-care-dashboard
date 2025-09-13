@@ -5,26 +5,35 @@ from flask_login import current_user
 def get_navbar():
     """Returns the appropriate navbar based on user authentication status"""
     if current_user.is_authenticated:
-        # Navigation for logged-in users
+        # Navigation for logged-in users based on role
         nav_items = [
             dbc.NavItem(dbc.NavLink("Home", href="/")),
-            dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard")),
-            dbc.NavItem(dbc.NavLink("Profile", href="/profile")),
-            dbc.NavItem(dbc.NavLink("My Projects", href="/projects")),
         ]
         
-        # Add Admin section if user is admin
-        if hasattr(current_user, 'is_admin') and current_user.is_admin:
-            nav_items.append(dbc.NavItem(dbc.NavLink("Admin Panel", href="/admin")))
-            
+        # Role-specific navigation
+        if current_user.role == 'patient':
+            nav_items.extend([
+                dbc.NavItem(dbc.NavLink("My Dashboard", href="/patient-dashboard")),
+                dbc.NavItem(dbc.NavLink("Profile", href="/profile"))
+            ])
+        elif current_user.role == 'doctor':
+            nav_items.extend([
+                dbc.NavItem(dbc.NavLink("Doctor Dashboard", href="/doctor-dashboard")),
+                dbc.NavItem(dbc.NavLink("Profile", href="/profile"))
+            ])
+        
         nav_items.append(dbc.NavItem(dbc.NavLink("Logout", href="/logout")))
+        
+        # Add user info to navbar
+        user_info = f"{current_user.username} ({current_user.role.title()})"
         
         navbar = dbc.NavbarSimple(
             children=nav_items,
-            brand="My Dash App",
+            brand="Diabetes Care System",
             brand_href="/",
             color="primary",
             dark=True,
+            className="mb-3"
         )
     else:
         # Navigation for guests
@@ -32,11 +41,11 @@ def get_navbar():
             children=[
                 dbc.NavItem(dbc.NavLink("Home", href="/")),
                 dbc.NavItem(dbc.NavLink("Login", href="/login")),
-                dbc.NavItem(dbc.NavLink("Register", href="/register")),
             ],
-            brand="My Dash App",
+            brand="Diabetes Care System",
             brand_href="/",
             color="primary",
             dark=True,
+            className="mb-3"
         )
     return navbar
