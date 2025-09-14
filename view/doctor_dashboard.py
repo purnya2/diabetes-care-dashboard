@@ -68,16 +68,7 @@ def get_patient_list_tab():
                 html.H4("My Patients"),
                 html.Div(id="patients-table")
             ], width=8),
-            dbc.Col([
-                html.H4("Quick Actions"),
-                dbc.Card([
-                    dbc.CardBody([
-                        dbc.Button("Add New Patient", id="add-patient-btn", color="primary", className="mb-2 w-100"),
-                        dbc.Button("View All Alerts", id="view-all-alerts-btn", color="warning", className="mb-2 w-100"),
-                        dbc.Button("Export Report", id="export-report-btn", color="info", className="w-100")
-                    ])
-                ])
-            ], width=4)
+            
         ])
     ])
 
@@ -183,7 +174,8 @@ def get_patient_detail_content():
                                     )
                                 ])
                             ], className="mb-3"),
-                            dbc.Button("Update Patient Info", id="update-patient-info-btn", color="primary")
+                            dbc.Button("Update Patient Info", id="update-patient-info-btn", color="primary"),
+                            html.Div(id="update-patient-output", className="mt-3")
                         ])
                     ])
                 ])

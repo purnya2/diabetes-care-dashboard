@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from model import (
     get_patient_by_user_id, add_glucose_reading, get_patient_glucose_readings,
     add_symptom, record_medication_intake, get_patient_active_therapies,
-    get_unread_alerts, check_glucose_alerts
+    get_unread_alerts, check_glucose_alerts, check_and_clear_compliance_alerts
 )
 from view.patient_dashboard import (
     get_log_data_tab, get_therapies_tab, get_alerts_tab
@@ -146,12 +146,13 @@ def register_patient_callbacks(app):
         [Input('record-medication-btn', 'n_clicks')],
         [State('therapy-select', 'value'),
          State('dose-taken', 'value'),
+         State('medication-date', 'value'),
          State('medication-time', 'value'),
          State('medication-notes', 'value')],
         prevent_initial_call=True
     )
     @db_session
-    def record_medication(n_clicks, therapy_id, dose_taken, med_time, notes):
+    def record_medication(n_clicks, therapy_id, dose_taken, med_date, med_time, notes):
         if not n_clicks or not therapy_id or dose_taken is None:
             return ""
         
@@ -162,11 +163,31 @@ def register_patient_callbacks(app):
         if not patient:
             return dbc.Alert("Patient record not found", color="danger")
         
+        # Combine date and time into datetime
+        try:
+            if med_date and med_time:
+                from datetime import datetime, time
+                intake_datetime = datetime.combine(
+                    datetime.strptime(med_date, "%Y-%m-%d").date(),
+                    datetime.strptime(med_time, "%H:%M").time()
+                )
+            else:
+                intake_datetime = datetime.now()
+        except ValueError:
+            return dbc.Alert("Invalid date or time format", color="warning")
+        
         # Record medication intake
-        success = record_medication_intake(patient.id, therapy_id, dose_taken, notes)
+        success = record_medication_intake(patient.id, therapy_id, dose_taken, notes, intake_datetime)
+        
+        # Check and clear compliance alerts if patient is now compliant
+        if success:
+            check_and_clear_compliance_alerts(patient.id)
         
         if success:
-            return dbc.Alert("Medication intake recorded successfully", color="success")
+            return dbc.Alert(
+                f"Medication intake recorded successfully for {med_date} at {med_time}", 
+                color="success"
+            )
         else:
             return dbc.Alert("Failed to record medication intake", color="danger")
     
@@ -229,7 +250,7 @@ def register_patient_callbacks(app):
                 'Dose': f"{therapy.dose_amount} {therapy.dose_unit}",
                 'Frequency': f"{therapy.daily_doses} times/day",
                 'Instructions': therapy.instructions or "No special instructions",
-                'Start Date': therapy.start_date.strftime('%m/%d/%Y')
+                'Start Date': therapy.start_date.strftime('%d/%m/%Y')
             })
         
         return dash_table.DataTable(
@@ -276,7 +297,7 @@ def register_patient_callbacks(app):
                 dbc.Alert([
                     html.H6(f"{alert.alert_type.replace('_', ' ').title()}", className="alert-heading"),
                     html.P(alert.message),
-                    html.Small(f"Created: {alert.created_at.strftime('%m/%d/%Y %H:%M')}")
+                    html.Small(f"Created: {alert.created_at.strftime('%d/%m/%Y %H:%M')}")
                 ], color=color, className="mb-2")
             )
         

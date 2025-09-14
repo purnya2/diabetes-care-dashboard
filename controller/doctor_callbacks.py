@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from model import (
     get_doctor_by_user_id, Patient, Doctor, add_therapy, 
     get_patient_glucose_readings, get_unread_alerts,
-    get_patient_active_therapies
+    get_patient_active_therapies, update_patient_info
 )
 from view.doctor_dashboard import (
     get_patient_list_tab, get_patient_details_tab, 
@@ -126,20 +126,22 @@ def register_doctor_callbacks(app):
             id='patients-table-component'
         )
     
-    # Populate patient dropdowns
+    # Populate patient dropdown for patient details tab
     @app.callback(
-        [Output('selected-patient', 'options'),
-         Output('therapy-patient-select', 'options')],
+        Output('selected-patient', 'options'),
         Input('doctor-tabs', 'active_tab')
     )
     @db_session
-    def update_patient_options(active_tab):
+    def update_selected_patient_options(active_tab):
+        if active_tab != 'patient-details':
+            return dash.no_update
+        
         if not current_user.is_authenticated or current_user.role != 'doctor':
-            return [], []
+            return []
         
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
-            return [], []
+            return []
         
         options = [
             {
@@ -148,8 +150,33 @@ def register_doctor_callbacks(app):
             }
             for patient in doctor.patients
         ]
+        return options
+    
+    # Populate patient dropdown for therapy prescription tab
+    @app.callback(
+        Output('therapy-patient-select', 'options'),
+        Input('doctor-tabs', 'active_tab')
+    )
+    @db_session
+    def update_therapy_patient_options(active_tab):
+        if active_tab != 'prescribe-therapy':
+            return dash.no_update
         
-        return options, options
+        if not current_user.is_authenticated or current_user.role != 'doctor':
+            return []
+        
+        doctor = get_doctor_by_user_id(current_user.id)
+        if not doctor:
+            return []
+        
+        options = [
+            {
+                'label': f"{patient.user.username} (ID: {patient.id})",
+                'value': patient.id
+            }
+            for patient in doctor.patients
+        ]
+        return options
     
     # Patient detail content
     @app.callback(
@@ -336,7 +363,7 @@ def register_doctor_callbacks(app):
         # Add therapy
         success = add_therapy(
             patient_id, doctor.id, drug_name, daily_doses, 
-            dose_amount, dose_unit, instructions
+            dose_amount, dose_unit, instructions or ""
         )
         
         if success:
@@ -414,6 +441,63 @@ def register_doctor_callbacks(app):
             )
         
         return alert_components
+
+    # Update patient info callback
+    @app.callback(
+        Output('update-patient-output', 'children'),
+        [Input('update-patient-info-btn', 'n_clicks')],
+        [State('selected-patient', 'value'),
+         State('update-risk-factors', 'value'),
+         State('update-medical-history', 'value'),
+         State('update-comorbidities', 'value')],
+        prevent_initial_call=True
+    )
+    @db_session
+    def update_patient_information(n_clicks, selected_patient_id, risk_factors, medical_history, comorbidities):
+        if not n_clicks or not selected_patient_id:
+            return ""
+        
+        if not current_user.is_authenticated or current_user.role != 'doctor':
+            return dbc.Alert("Access denied", color="danger")
+        
+        # Update patient information
+        success = update_patient_info(
+            selected_patient_id, 
+            risk_factors=risk_factors or "", 
+            medical_history=medical_history or "", 
+            comorbidities=comorbidities or ""
+        )
+        
+        if success:
+            patient = Patient[selected_patient_id]
+            return dbc.Alert(
+                f"✅ Patient information updated successfully for {patient.user.username}!", 
+                color="success"
+            )
+        else:
+            return dbc.Alert("❌ Failed to update patient information", color="danger")
+
+    # Populate patient info fields when patient is selected
+    @app.callback(
+        [Output('update-risk-factors', 'value'),
+         Output('update-medical-history', 'value'),
+         Output('update-comorbidities', 'value')],
+        Input('selected-patient', 'value')
+    )
+    @db_session
+    def populate_patient_info_fields(selected_patient_id):
+        if not selected_patient_id:
+            return "", "", ""
+        
+        try:
+            patient = Patient[selected_patient_id]
+            return (
+                patient.risk_factors or "",
+                patient.medical_history or "",
+                patient.comorbidities or ""
+            )
+        except:
+            return "", "", ""
 
 def get_glucose_status(value, is_before_meal):
     """Helper function to determine glucose status"""

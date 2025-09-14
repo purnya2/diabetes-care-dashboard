@@ -27,3 +27,9 @@ def register_callbacks(app):
     register_patient_callbacks(app)
     register_doctor_callbacks(app)
     register_routing_callbacks(app)
+
+'''
+    Questo file (callbacks.py) serve per collegare tutte le funzionalità interattive 
+    dell'applicazione Dash. In pratica, registra tutte le "callback" (funzioni che aggiornano 
+    l'interfaccia utente in base alle azioni dell'utente o alla navigazione).
+'''

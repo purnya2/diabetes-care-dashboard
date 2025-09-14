@@ -11,7 +11,11 @@ from model.operations import (
     list_all_users, delete_user, get_patient_by_user_id, get_doctor_by_user_id,
     add_glucose_reading, get_patient_glucose_readings, add_therapy, 
     get_patient_active_therapies, record_medication_intake, add_symptom,
-    create_alert, get_unread_alerts, check_glucose_alerts
+    create_alert, get_unread_alerts, check_glucose_alerts,
+    check_medication_compliance, check_all_patients_compliance, 
+    get_therapy_compliance_status, check_glucose_thresholds_and_alert,
+    clear_compliance_alerts_for_patient, check_and_clear_compliance_alerts,
+    update_patient_info
 )
 
 # Configure the database when the module is imported
@@ -27,7 +31,11 @@ __all__ = [
     'list_all_users', 'delete_user', 'get_patient_by_user_id', 'get_doctor_by_user_id',
     'add_glucose_reading', 'get_patient_glucose_readings', 'add_therapy',
     'get_patient_active_therapies', 'record_medication_intake', 'add_symptom',
-    'create_alert', 'get_unread_alerts', 'check_glucose_alerts'
+    'create_alert', 'get_unread_alerts', 'check_glucose_alerts',
+    'check_medication_compliance', 'check_all_patients_compliance', 
+    'get_therapy_compliance_status', 'check_glucose_thresholds_and_alert',
+    'clear_compliance_alerts_for_patient', 'check_and_clear_compliance_alerts',
+    'update_patient_info'
 ]
 
 '''

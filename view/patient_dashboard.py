@@ -117,11 +117,15 @@ def get_log_data_tab():
                                 dbc.Col([
                                     dbc.Label("Dose Taken"),
                                     dbc.Input(id="dose-taken", type="number", min=0, step=0.1, placeholder="Amount taken")
-                                ], width=6),
+                                ], width=4),
+                                dbc.Col([
+                                    dbc.Label("Date"),
+                                    dbc.Input(id="medication-date", type="date", value=datetime.now().strftime("%Y-%m-%d"))
+                                ], width=4),
                                 dbc.Col([
                                     dbc.Label("Time"),
                                     dbc.Input(id="medication-time", type="time", value=datetime.now().strftime("%H:%M"))
-                                ], width=6)
+                                ], width=4)
                             ], className="mb-3"),
                             dbc.Row([
                                 dbc.Col([

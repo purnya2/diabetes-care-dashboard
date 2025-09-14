@@ -9,6 +9,7 @@ from pony.orm import db_session
 from model import get_user
 from view import get_app_layout
 from controller import register_callbacks
+from scheduler import start_scheduler
 
 # Initialize the Dash app with Bootstrap styling
 app = dash.Dash(
@@ -37,6 +38,9 @@ app.layout = get_app_layout()
 
 # Register all callbacks
 register_callbacks(app)
+
+# Start the compliance monitoring scheduler
+start_scheduler()
 
 # Run the app
 if __name__ == '__main__':
