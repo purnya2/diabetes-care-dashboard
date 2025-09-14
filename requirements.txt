@@ -3,3 +3,9 @@ dash_bootstrap_components
 flask_login
 pony
 werkzeug
+pytest
+pytest-cov
+pytest-mock
+freezegun
+factory-boy
+pytest-xdist
