@@ -6,6 +6,9 @@ from flask_login import current_user
 
 from view.modals import create_delete_user_modal
 
+# Import profile modals
+from controller.profile_callbacks import create_edit_profile_modal, create_change_password_modal
+
 # Main app layout
 def get_app_layout():
     """Returns the main app layout"""
@@ -17,8 +20,10 @@ def get_app_layout():
         # Hidden containers for storing state
         dcc.Store(id='selected-user-id'),
 
-        # Modals for user management only
-        create_delete_user_modal()
+        # Modals for user management and profile
+        create_delete_user_modal(),
+        create_edit_profile_modal(),
+        create_change_password_modal()
     ])
 
 # Home page layout
@@ -27,7 +32,7 @@ def get_home_layout():
     return html.Div([
         html.H1('Diabetes Care Telemedicine System', className='text-center mb-4'),
         html.P('Welcome to the Diabetes Care Management Platform', className='lead text-center mb-5'),
-        
+
         dbc.Row([
             dbc.Col([
                 dbc.Card([
@@ -44,7 +49,7 @@ def get_home_layout():
                     ])
                 ])
             ], width=6),
-            
+
             dbc.Col([
                 dbc.Card([
                     dbc.CardHeader("For Doctors"),
@@ -62,8 +67,8 @@ def get_home_layout():
                 ])
             ], width=6)
         ], className="mb-5"),
-        
-        
+
+
     ])
 
 # Dashboard page layout (protected)

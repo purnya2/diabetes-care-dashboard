@@ -9,19 +9,19 @@ from pony.orm import db_session, select
 from datetime import datetime, timedelta
 
 from model import (
-    get_doctor_by_user_id, Patient, Doctor, add_therapy, 
+    get_doctor_by_user_id, Patient, Doctor, add_therapy,
     get_patient_glucose_readings, get_unread_alerts,
     get_patient_active_therapies, update_patient_info
 )
 from view.doctor_dashboard import (
-    get_patient_list_tab, get_patient_details_tab, 
+    get_patient_list_tab, get_patient_details_tab,
     get_prescribe_therapy_tab, get_alerts_monitoring_tab,
     get_patient_detail_content
 )
 
 def register_doctor_callbacks(app):
     """Register doctor dashboard callbacks"""
-    
+
     # Tab content callback
     @app.callback(
         Output('doctor-tab-content', 'children'),
@@ -37,7 +37,7 @@ def register_doctor_callbacks(app):
         elif active_tab == "alerts-monitoring":
             return get_alerts_monitoring_tab()
         return html.Div("Select a tab")
-    
+
     # Update doctor dashboard stats
     @app.callback(
         [Output('total-patients-count', 'children'),
@@ -50,26 +50,26 @@ def register_doctor_callbacks(app):
     def update_doctor_stats(pathname):
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return "--", "--", "--", "--"
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return "--", "--", "--", "--"
-        
+
         # Total patients count
         patients_count = len(doctor.patients)
-        
+
         # High priority alerts
         high_priority_alerts = get_unread_alerts(doctor_id=doctor.id)
         high_priority_count = len([a for a in high_priority_alerts if a.severity == 'high'])
-        
+
         # Total active therapies prescribed by this doctor
         total_therapies = len(doctor.prescribed_therapies)
-        
+
         # Compliance issues (simplified - patients with recent alerts)
         compliance_issues = 0  # This would need more complex logic
-        
+
         return str(patients_count), str(high_priority_count), str(total_therapies), str(compliance_issues)
-    
+
     # Patients table
     @app.callback(
         Output('patients-table', 'children'),
@@ -79,30 +79,30 @@ def register_doctor_callbacks(app):
     def update_patients_table(active_tab):
         if active_tab != "patient-list":
             return ""
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return "Access denied"
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return "Doctor record not found"
-        
+
         patients = doctor.patients
-        
+
         if not patients:
             return dbc.Alert("No patients assigned", color="info")
-        
+
         # Create table data
         table_data = []
         for patient in patients:
             # Get latest glucose reading
             recent_readings = get_patient_glucose_readings(patient.id, days=1)
             latest_glucose = recent_readings[-1].value if recent_readings else "No data"
-            
+
             # Get active therapies count
             active_therapies = get_patient_active_therapies(patient.id)
             therapies_count = len(active_therapies)
-            
+
             table_data.append({
                 'Patient ID': patient.id,
                 'Username': patient.user.username,
@@ -110,7 +110,7 @@ def register_doctor_callbacks(app):
                 'Active Therapies': therapies_count,
                 'Last Reading': recent_readings[-1].measurement_time.strftime('%m/%d %H:%M') if recent_readings else "No data"
             })
-        
+
         return dash_table.DataTable(
             data=table_data,
             columns=[
@@ -125,7 +125,7 @@ def register_doctor_callbacks(app):
             row_selectable='single',
             id='patients-table-component'
         )
-    
+
     # Populate patient dropdown for patient details tab
     @app.callback(
         Output('selected-patient', 'options'),
@@ -135,14 +135,14 @@ def register_doctor_callbacks(app):
     def update_selected_patient_options(active_tab):
         if active_tab != 'patient-details':
             return dash.no_update
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return []
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return []
-        
+
         options = [
             {
                 'label': f"{patient.user.username} (ID: {patient.id})",
@@ -151,7 +151,7 @@ def register_doctor_callbacks(app):
             for patient in doctor.patients
         ]
         return options
-    
+
     # Populate patient dropdown for therapy prescription tab
     @app.callback(
         Output('therapy-patient-select', 'options'),
@@ -161,14 +161,14 @@ def register_doctor_callbacks(app):
     def update_therapy_patient_options(active_tab):
         if active_tab != 'prescribe-therapy':
             return dash.no_update
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return []
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return []
-        
+
         options = [
             {
                 'label': f"{patient.user.username} (ID: {patient.id})",
@@ -177,7 +177,7 @@ def register_doctor_callbacks(app):
             for patient in doctor.patients
         ]
         return options
-    
+
     # Patient detail content
     @app.callback(
         Output('patient-detail-content', 'children'),
@@ -187,22 +187,22 @@ def register_doctor_callbacks(app):
     def update_patient_detail(patient_id):
         if not patient_id:
             return html.Div("Select a patient to view details")
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return "Access denied"
-        
+
         return get_patient_detail_content()
-    
+
     # Patient info display
     @app.callback(
         Output('patient-info-display', 'children'),
         Input('selected-patient', 'value')
     )
     @db_session
-    def update_patient_info(patient_id):
+    def display_patient_info(patient_id):
         if not patient_id:
             return ""
-        
+
         try:
             patient = Patient[patient_id]
             return html.Div([
@@ -213,7 +213,7 @@ def register_doctor_callbacks(app):
             ])
         except:
             return "Patient not found"
-    
+
     # Doctor glucose chart
     @app.callback(
         Output('doctor-glucose-chart', 'figure'),
@@ -223,10 +223,10 @@ def register_doctor_callbacks(app):
     def update_doctor_glucose_chart(patient_id):
         if not patient_id:
             return {}
-        
+
         try:
             readings = get_patient_glucose_readings(patient_id, days=30)
-            
+
             if not readings:
                 return {
                     'data': [],
@@ -236,13 +236,13 @@ def register_doctor_callbacks(app):
                         'yaxis': {'title': 'Glucose (mg/dL)'}
                     }
                 }
-            
+
             # Separate before and after meal readings
             before_meal_x = []
             before_meal_y = []
             after_meal_x = []
             after_meal_y = []
-            
+
             for reading in readings:
                 if reading.is_before_meal:
                     before_meal_x.append(reading.measurement_time)
@@ -250,9 +250,9 @@ def register_doctor_callbacks(app):
                 else:
                     after_meal_x.append(reading.measurement_time)
                     after_meal_y.append(reading.value)
-            
+
             traces = []
-            
+
             if before_meal_x:
                 traces.append(go.Scatter(
                     x=before_meal_x,
@@ -261,7 +261,7 @@ def register_doctor_callbacks(app):
                     name='Before Meals',
                     marker=dict(color='blue')
                 ))
-            
+
             if after_meal_x:
                 traces.append(go.Scatter(
                     x=after_meal_x,
@@ -270,7 +270,7 @@ def register_doctor_callbacks(app):
                     name='After Meals',
                     marker=dict(color='red')
                 ))
-            
+
             return {
                 'data': traces,
                 'layout': {
@@ -282,7 +282,7 @@ def register_doctor_callbacks(app):
             }
         except:
             return {}
-    
+
     # Recent readings for doctor view
     @app.callback(
         Output('doctor-recent-readings', 'children'),
@@ -292,14 +292,14 @@ def register_doctor_callbacks(app):
     def update_doctor_recent_readings(patient_id):
         if not patient_id:
             return ""
-        
+
         try:
             readings = get_patient_glucose_readings(patient_id, days=7)
             recent_readings = readings[-10:] if len(readings) > 10 else readings
-            
+
             if not recent_readings:
                 return "No recent readings"
-            
+
             # Create table data
             table_data = []
             for reading in reversed(recent_readings):  # Show most recent first
@@ -310,7 +310,7 @@ def register_doctor_callbacks(app):
                     'Timing': 'Before Meal' if reading.is_before_meal else 'After Meal',
                     'Status': status
                 })
-            
+
             return dash_table.DataTable(
                 data=table_data,
                 columns=[
@@ -335,7 +335,7 @@ def register_doctor_callbacks(app):
             )
         except:
             return "Error loading readings"
-    
+
     # Prescribe therapy callback
     @app.callback(
         Output('prescribe-therapy-output', 'children'),
@@ -352,20 +352,20 @@ def register_doctor_callbacks(app):
     def prescribe_therapy(n_clicks, patient_id, drug_name, daily_doses, dose_amount, dose_unit, instructions):
         if not n_clicks or not all([patient_id, drug_name, daily_doses, dose_amount, dose_unit]):
             return ""
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return dbc.Alert("Access denied", color="danger")
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return dbc.Alert("Doctor record not found", color="danger")
-        
+
         # Add therapy
         success = add_therapy(
-            patient_id, doctor.id, drug_name, daily_doses, 
+            patient_id, doctor.id, drug_name, daily_doses,
             dose_amount, dose_unit, instructions or ""
         )
-        
+
         if success:
             return dbc.Alert(
                 f"Therapy prescribed successfully: {drug_name} {dose_amount}{dose_unit}, {daily_doses} times/day",
@@ -373,7 +373,7 @@ def register_doctor_callbacks(app):
             )
         else:
             return dbc.Alert("Failed to prescribe therapy", color="danger")
-    
+
     # Current patient therapies
     @app.callback(
         Output('current-patient-therapies', 'children'),
@@ -383,13 +383,13 @@ def register_doctor_callbacks(app):
     def update_current_therapies(patient_id):
         if not patient_id:
             return "Select a patient"
-        
+
         try:
             therapies = get_patient_active_therapies(patient_id)
-            
+
             if not therapies:
                 return dbc.Alert("No active therapies", color="info")
-            
+
             therapy_list = []
             for therapy in therapies:
                 therapy_list.append(
@@ -399,11 +399,11 @@ def register_doctor_callbacks(app):
                         html.Small(f"Instructions: {therapy.instructions or 'None'}")
                     ])
                 )
-            
+
             return dbc.ListGroup(therapy_list)
         except:
             return "Error loading therapies"
-    
+
     # Priority alerts
     @app.callback(
         Output('priority-alerts-list', 'children'),
@@ -413,25 +413,25 @@ def register_doctor_callbacks(app):
     def update_priority_alerts(active_tab):
         if active_tab != "alerts-monitoring":
             return ""
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return "Access denied"
-        
+
         doctor = get_doctor_by_user_id(current_user.id)
         if not doctor:
             return "Doctor record not found"
-        
+
         alerts = get_unread_alerts(doctor_id=doctor.id)
         priority_alerts = [a for a in alerts if a.severity in ['high', 'medium']]
-        
+
         if not priority_alerts:
             return dbc.Alert("No priority alerts", color="success")
-        
+
         alert_components = []
         for alert in priority_alerts:
             color_map = {'medium': 'warning', 'high': 'danger'}
             color = color_map.get(alert.severity, 'info')
-            
+
             alert_components.append(
                 dbc.Alert([
                     html.H6(f"Patient: {alert.patient.user.username}", className="alert-heading"),
@@ -439,8 +439,207 @@ def register_doctor_callbacks(app):
                     html.Small(f"Created: {alert.created_at.strftime('%m/%d/%Y %H:%M')}")
                 ], color=color, className="mb-2")
             )
-        
+
         return alert_components
+
+    # Compliance monitoring callback
+    @app.callback(
+        Output('compliance-monitoring-list', 'children'),
+        Input('doctor-tabs', 'active_tab')
+    )
+    @db_session
+    def update_compliance_monitoring(active_tab):
+        if active_tab != "alerts-monitoring":
+            return ""
+
+        if not current_user.is_authenticated or current_user.role != 'doctor':
+            return "Access denied"
+
+        doctor = get_doctor_by_user_id(current_user.id)
+        if not doctor:
+            return "Doctor record not found"
+
+        # Get patients with compliance issues (simplified logic)
+        compliance_issues = []
+        for patient in doctor.patients:
+            # Check for missed medications in last 7 days
+            recent_therapies = get_patient_active_therapies(patient.id)
+            if recent_therapies:
+                # For each therapy, check if patient has recorded intake recently
+                from model import MedicationIntake
+                from datetime import datetime, timedelta
+
+                missed_count = 0
+                for therapy in recent_therapies:
+                    # Use simple iteration to avoid Pony ORM decompiler issues
+                    cutoff_time = datetime.now() - timedelta(days=3)
+                    recent_intakes = []
+
+                    for mi in MedicationIntake.select():
+                        if (mi.patient.id == patient.id and
+                            mi.therapy.id == therapy.id and
+                            mi.intake_time >= cutoff_time):
+                            recent_intakes.append(mi)
+
+                    expected_doses = therapy.daily_doses * 3  # Last 3 days
+                    actual_doses = len(recent_intakes)
+
+                    if actual_doses < expected_doses * 0.8:  # Less than 80% compliance
+                        missed_count += 1
+
+                if missed_count > 0:
+                    compliance_issues.append({
+                        'patient': patient,
+                        'missed_therapies': missed_count,
+                        'total_therapies': len(recent_therapies)
+                    })
+
+        if not compliance_issues:
+            return dbc.Alert("All patients are compliant with their medications", color="success")
+
+        # Create compliance list
+        compliance_components = []
+        for issue in compliance_issues:
+            compliance_rate = ((issue['total_therapies'] - issue['missed_therapies']) / issue['total_therapies']) * 100
+            color = "danger" if compliance_rate < 60 else "warning" if compliance_rate < 80 else "info"
+
+            compliance_components.append(
+                dbc.Alert([
+                    html.H6(f"Patient: {issue['patient'].user.username}", className="alert-heading"),
+                    html.P(f"Compliance Rate: {compliance_rate:.1f}%"),
+                    html.P(f"Missed {issue['missed_therapies']} out of {issue['total_therapies']} therapies"),
+                    html.Small("Based on medication intake records in the last 3 days")
+                ], color=color, className="mb-2")
+            )
+
+        return compliance_components
+
+    # Glucose alerts summary callback
+    @app.callback(
+        Output('glucose-alerts-summary', 'children'),
+        Input('doctor-tabs', 'active_tab')
+    )
+    @db_session
+    def update_glucose_alerts_summary(active_tab):
+        if active_tab != "alerts-monitoring":
+            return ""
+
+        if not current_user.is_authenticated or current_user.role != 'doctor':
+            return "Access denied"
+
+        doctor = get_doctor_by_user_id(current_user.id)
+        if not doctor:
+            return "Doctor record not found"
+
+        # Get glucose-related alerts for doctor's patients
+        from model import Alert
+        from datetime import datetime, timedelta
+
+        # Use simple iteration to avoid Pony ORM decompiler issues
+        cutoff_date = datetime.now() - timedelta(days=7)
+        recent_glucose_alerts = []
+
+        for alert in Alert.select():
+            if (alert.patient in doctor.patients and
+                alert.alert_type in ['high_glucose', 'low_glucose', 'glucose_trend'] and
+                alert.created_at >= cutoff_date):
+                recent_glucose_alerts.append(alert)
+
+        if not recent_glucose_alerts:
+            return dbc.Alert("No glucose alerts in the last 7 days", color="success")
+
+        # Categorize alerts
+        high_glucose = len([a for a in recent_glucose_alerts if a.alert_type == 'high_glucose'])
+        low_glucose = len([a for a in recent_glucose_alerts if a.alert_type == 'low_glucose'])
+        trend_alerts = len([a for a in recent_glucose_alerts if a.alert_type == 'glucose_trend'])
+
+        summary_cards = dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4(str(high_glucose), className="text-danger"),
+                        html.P("High Glucose Alerts", className="card-text")
+                    ])
+                ])
+            ], width=4),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4(str(low_glucose), className="text-warning"),
+                        html.P("Low Glucose Alerts", className="card-text")
+                    ])
+                ])
+            ], width=4),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4(str(trend_alerts), className="text-info"),
+                        html.P("Trend Alerts", className="card-text")
+                    ])
+                ])
+            ], width=4)
+        ])
+
+        return html.Div([
+            html.H5("Glucose Alerts Summary (Last 7 Days)", className="mb-3"),
+            summary_cards
+        ])
+
+    # Patient compliance info callback
+    @app.callback(
+        Output('patient-compliance-info', 'children'),
+        Input('selected-patient', 'value')
+    )
+    @db_session
+    def update_patient_compliance_info(patient_id):
+        if not patient_id:
+            return "Select a patient to view compliance information"
+
+        try:
+            from model import MedicationIntake
+            from datetime import datetime, timedelta
+
+            patient = Patient[patient_id]
+            active_therapies = get_patient_active_therapies(patient_id)
+
+            if not active_therapies:
+                return dbc.Alert("No active therapies for this patient", color="info")
+
+            compliance_data = []
+            for therapy in active_therapies:
+                # Get medication intakes for last 7 days
+                # Use simple iteration to avoid Pony ORM decompiler issues
+                cutoff_time = datetime.now() - timedelta(days=7)
+                recent_intakes = []
+
+                for mi in MedicationIntake.select():
+                    if (mi.patient.id == patient_id and
+                        mi.therapy.id == therapy.id and
+                        mi.intake_time >= cutoff_time):
+                        recent_intakes.append(mi)
+
+                expected_doses = therapy.daily_doses * 7  # 7 days
+                actual_doses = len(recent_intakes)
+                compliance_rate = (actual_doses / expected_doses * 100) if expected_doses > 0 else 0
+
+                color = "success" if compliance_rate >= 80 else "warning" if compliance_rate >= 60 else "danger"
+
+                compliance_data.append(
+                    dbc.ListGroupItem([
+                        html.Div([
+                            html.H6(f"{therapy.drug_name}", className="mb-1"),
+                            html.P(f"Compliance: {compliance_rate:.1f}% ({actual_doses}/{expected_doses} doses)", className="mb-1"),
+                            dbc.Progress(value=compliance_rate, color=color.replace('danger', 'danger').replace('warning', 'warning').replace('success', 'success'))
+                        ])
+                    ])
+                )
+
+            return html.Div([
+                html.H6("Medication Compliance (Last 7 Days)", className="mb-3"),
+                dbc.ListGroup(compliance_data)
+            ])
+        except Exception as e:
+            return f"Error loading compliance info: {str(e)}"
 
     # Update patient info callback
     @app.callback(
@@ -456,22 +655,22 @@ def register_doctor_callbacks(app):
     def update_patient_information(n_clicks, selected_patient_id, risk_factors, medical_history, comorbidities):
         if not n_clicks or not selected_patient_id:
             return ""
-        
+
         if not current_user.is_authenticated or current_user.role != 'doctor':
             return dbc.Alert("Access denied", color="danger")
-        
+
         # Update patient information
         success = update_patient_info(
-            selected_patient_id, 
-            risk_factors=risk_factors or "", 
-            medical_history=medical_history or "", 
+            selected_patient_id,
+            risk_factors=risk_factors or "",
+            medical_history=medical_history or "",
             comorbidities=comorbidities or ""
         )
-        
+
         if success:
             patient = Patient[selected_patient_id]
             return dbc.Alert(
-                f"✅ Patient information updated successfully for {patient.user.username}!", 
+                f"✅ Patient information updated successfully for {patient.user.username}!",
                 color="success"
             )
         else:
@@ -488,7 +687,7 @@ def register_doctor_callbacks(app):
     def populate_patient_info_fields(selected_patient_id):
         if not selected_patient_id:
             return "", "", ""
-        
+
         try:
             patient = Patient[selected_patient_id]
             return (

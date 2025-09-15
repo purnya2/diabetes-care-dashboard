@@ -3,12 +3,13 @@ from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 from datetime import datetime, timedelta
+from view.modals import create_therapy_modal, create_patient_note_modal, create_glucose_alert_modal
 
 def get_doctor_dashboard_layout():
     """Returns the doctor dashboard layout"""
     return html.Div([
         html.H1('Doctor Dashboard', className='mb-4'),
-        
+
         # Quick stats for doctor
         dbc.Row([
             dbc.Col([
@@ -48,7 +49,7 @@ def get_doctor_dashboard_layout():
                 ], color="light")
             ], width=3)
         ], className="mb-4"),
-        
+
         # Navigation tabs for doctor
         dbc.Tabs([
             dbc.Tab(label="Patient List", tab_id="patient-list"),
@@ -56,7 +57,7 @@ def get_doctor_dashboard_layout():
             dbc.Tab(label="Prescribe Therapy", tab_id="prescribe-therapy"),
             dbc.Tab(label="Alerts & Monitoring", tab_id="alerts-monitoring")
         ], id="doctor-tabs", active_tab="patient-list"),
-        
+
         html.Div(id="doctor-tab-content", className="mt-4")
     ])
 
@@ -68,7 +69,7 @@ def get_patient_list_tab():
                 html.H4("My Patients"),
                 html.Div(id="patients-table")
             ], width=8),
-            
+
         ])
     ])
 
@@ -88,7 +89,7 @@ def get_patient_details_tab():
                 ])
             ], width=12)
         ], className="mb-4"),
-        
+
         html.Div(id="patient-detail-content")
     ])
 
@@ -105,7 +106,7 @@ def get_patient_detail_content():
                     ])
                 ])
             ], width=4),
-            
+
             # Glucose trend
             dbc.Col([
                 dbc.Card([
@@ -116,7 +117,7 @@ def get_patient_detail_content():
                 ])
             ], width=8)
         ], className="mb-4"),
-        
+
         dbc.Row([
             # Recent readings
             dbc.Col([
@@ -127,7 +128,7 @@ def get_patient_detail_content():
                     ])
                 ])
             ], width=6),
-            
+
             # Medication compliance
             dbc.Col([
                 dbc.Card([
@@ -138,7 +139,7 @@ def get_patient_detail_content():
                 ])
             ], width=6)
         ], className="mb-4"),
-        
+
         # Patient management actions
         dbc.Row([
             dbc.Col([
@@ -175,6 +176,7 @@ def get_patient_detail_content():
                                 ])
                             ], className="mb-3"),
                             dbc.Button("Update Patient Info", id="update-patient-info-btn", color="primary"),
+                            dbc.Button("Add Note", id="open-note-modal", color="secondary", className="ms-2"),
                             html.Div(id="update-patient-output", className="mt-3")
                         ])
                     ])
@@ -250,12 +252,13 @@ def get_prescribe_therapy_tab():
                                     )
                                 ])
                             ], className="mb-3"),
-                            dbc.Button("Prescribe Therapy", id="prescribe-therapy-btn", color="success", size="lg")
+                            dbc.Button("Prescribe Therapy", id="prescribe-therapy-btn", color="success", size="lg"),
+                            dbc.Button("Quick Therapy", id="open-therapy-modal", color="info", size="lg", className="ms-2")
                         ])
                     ])
                 ])
             ], width=8),
-            
+
             dbc.Col([
                 dbc.Card([
                     dbc.CardHeader("Current Therapies"),
@@ -265,9 +268,18 @@ def get_prescribe_therapy_tab():
                 ])
             ], width=4)
         ]),
-        
+
         # Output for prescription
-        html.Div(id="prescribe-therapy-output", className="mt-3")
+        html.Div(id="prescribe-therapy-output", className="mt-3"),
+
+        # Output for modal operations
+        html.Div(id="therapy-modal-output", className="mt-3"),
+        html.Div(id="patient-note-output", className="mt-3"),
+
+        # Add modals
+        create_therapy_modal(),
+        create_patient_note_modal(),
+        create_glucose_alert_modal()
     ])
 
 def get_alerts_monitoring_tab():
@@ -283,7 +295,7 @@ def get_alerts_monitoring_tab():
                 html.Div(id="compliance-monitoring-list")
             ], width=6)
         ], className="mb-4"),
-        
+
         dbc.Row([
             dbc.Col([
                 html.H4("Glucose Alerts Summary"),

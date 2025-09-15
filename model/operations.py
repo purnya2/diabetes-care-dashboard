@@ -14,34 +14,34 @@ def initialize_db():
         # Create multiple doctors
         dr_smith_user = User(username='dr_smith', password_hash=generate_password_hash('doctorpass'), role='doctor')
         dr_smith = Doctor(user=dr_smith_user)
-        
+
         dr_johnson_user = User(username='dr_johnson', password_hash=generate_password_hash('doctorpass'), role='doctor')
         dr_johnson = Doctor(user=dr_johnson_user)
-        
+
         dr_garcia_user = User(username='dr_garcia', password_hash=generate_password_hash('doctorpass'), role='doctor')
         dr_garcia = Doctor(user=dr_garcia_user)
-        
+
         # Create multiple patients with different conditions
         # Patient 1: Well-controlled diabetes
         patient1_user = User(username='patient1', password_hash=generate_password_hash('patientpass'), role='patient')
         patient1 = Patient(user=patient1_user, assigned_doctor=dr_smith)
-        
+
         # Patient 2: Poorly controlled diabetes with alerts
         patient2_user = User(username='mario_rossi', password_hash=generate_password_hash('patientpass'), role='patient')
         patient2 = Patient(user=patient2_user, assigned_doctor=dr_smith)
-        
+
         # Patient 3: Newly diagnosed
         patient3_user = User(username='anna_verdi', password_hash=generate_password_hash('patientpass'), role='patient')
         patient3 = Patient(user=patient3_user, assigned_doctor=dr_johnson)
-        
+
         # Patient 4: Type 1 diabetes with insulin
         patient4_user = User(username='luca_bianchi', password_hash=generate_password_hash('patientpass'), role='patient')
         patient4 = Patient(user=patient4_user, assigned_doctor=dr_garcia)
-        
+
         # Patient 5: Gestational diabetes
         patient5_user = User(username='giulia_ferrari', password_hash=generate_password_hash('patientpass'), role='patient')
         patient5 = Patient(user=patient5_user, assigned_doctor=dr_johnson)
-        
+
         # Create comprehensive therapies for each patient
         # Patient 1 therapies (well-controlled)
         Therapy(
@@ -54,7 +54,7 @@ def initialize_db():
             instructions="Take with meals, morning and evening",
             start_date=datetime.now() - timedelta(days=90)
         )
-        
+
         # Patient 2 therapies (multiple medications)
         Therapy(
             patient=patient2,
@@ -66,7 +66,7 @@ def initialize_db():
             instructions="Take with breakfast and dinner",
             start_date=datetime.now() - timedelta(days=180)
         )
-        
+
         Therapy(
             patient=patient2,
             doctor=dr_smith,
@@ -77,7 +77,7 @@ def initialize_db():
             instructions="Take 30 minutes before meals",
             start_date=datetime.now() - timedelta(days=60)
         )
-        
+
         # Patient 3 therapies (newly diagnosed - lifestyle + metformin)
         Therapy(
             patient=patient3,
@@ -89,7 +89,7 @@ def initialize_db():
             instructions="Take with dinner, increase to twice daily after 2 weeks",
             start_date=datetime.now() - timedelta(days=14)
         )
-        
+
         # Patient 4 therapies (Type 1 - insulin regimen)
         Therapy(
             patient=patient4,
@@ -101,7 +101,7 @@ def initialize_db():
             instructions="Inject once daily at bedtime",
             start_date=datetime.now() - timedelta(days=365)
         )
-        
+
         Therapy(
             patient=patient4,
             doctor=dr_garcia,
@@ -112,7 +112,7 @@ def initialize_db():
             instructions="Inject before each meal, adjust based on carb counting",
             start_date=datetime.now() - timedelta(days=365)
         )
-        
+
         # Patient 5 therapies (gestational diabetes)
         Therapy(
             patient=patient5,
@@ -124,7 +124,7 @@ def initialize_db():
             instructions="Morning and evening doses, monitor closely",
             start_date=datetime.now() - timedelta(days=30)
         )
-        
+
         # Create glucose readings with different patterns
         # Patient 1: Good control (mostly normal readings)
         for i in range(21):  # 3 weeks of data
@@ -145,7 +145,7 @@ def initialize_db():
                 is_before_meal=False,
                 notes="2 hours after dinner" if i % 7 == 0 else ""
             )
-        
+
         # Patient 2: Poor control (high readings, some dangerous)
         for i in range(14):  # 2 weeks of data
             day_offset = timedelta(days=i)
@@ -167,7 +167,7 @@ def initialize_db():
                 is_before_meal=False,
                 notes="Had large meal" if evening_value > 240 else ""
             )
-        
+
         # Patient 3: Newly diagnosed (improving trend)
         for i in range(14):  # 2 weeks since diagnosis
             day_offset = timedelta(days=i)
@@ -181,7 +181,7 @@ def initialize_db():
                 is_before_meal=True,
                 notes="Learning to manage diet" if i < 3 else ""
             )
-        
+
         # Patient 4: Type 1 with some variability
         for i in range(30):  # 1 month of data
             day_offset = timedelta(days=i)
@@ -203,7 +203,7 @@ def initialize_db():
                 is_before_meal=False,
                 notes="Carb counting: 45g" if i % 10 == 0 else ""
             )
-        
+
         # Patient 5: Gestational diabetes (moderate control)
         for i in range(30):  # 1 month of monitoring
             day_offset = timedelta(days=i)
@@ -215,8 +215,8 @@ def initialize_db():
                 is_before_meal=True,
                 notes="Pregnancy week " + str(28 + i//7) if i % 7 == 0 else ""
             )
-        
-        
+
+
         # Add symptoms
         # Patient 2: Multiple symptoms due to poor control
         Symptom(
@@ -234,7 +234,7 @@ def initialize_db():
             start_date=datetime.now() - timedelta(days=10),
             severity="medium"
         )
-        
+
         Symptom(
             patient=patient2,
             name="Frequent urination",
@@ -242,7 +242,7 @@ def initialize_db():
             start_date=datetime.now() - timedelta(days=8),
             severity="medium"
         )
-        
+
         Symptom(
             patient=patient2,
             name="Fatigue",
@@ -250,7 +250,7 @@ def initialize_db():
             start_date=datetime.now() - timedelta(days=5),
             severity="high"
         )
-        
+
         # Patient 3: Initial symptoms (improving)
         Symptom(
             patient=patient3,
@@ -259,7 +259,7 @@ def initialize_db():
             start_date=datetime.now() - timedelta(days=14),
             severity="low"
         )
-        
+
         # Patient 4: Hypoglycemia episode
         Symptom(
             patient=patient4,
@@ -268,7 +268,7 @@ def initialize_db():
             start_date=datetime.now() - timedelta(days=3),
             severity="high"
         )
-        
+
         # Create alerts based on the data
         # High glucose alerts for Patient 2
         Alert(
@@ -280,7 +280,7 @@ def initialize_db():
             created_at=datetime.now() - timedelta(hours=6),
             is_read=False
         )
-        
+
         Alert(
             patient=patient2,
             doctor=dr_smith,
@@ -290,7 +290,7 @@ def initialize_db():
             created_at=datetime.now() - timedelta(days=1),
             is_read=False
         )
-        
+
         # Hypoglycemia alert for Patient 4
         Alert(
             patient=patient4,
@@ -302,7 +302,7 @@ def initialize_db():
             is_read=True,
             resolved_at=datetime.now() - timedelta(days=2)
         )
-        
+
         # Follow-up alert for Patient 3
         Alert(
             patient=patient3,
@@ -313,7 +313,7 @@ def initialize_db():
             created_at=datetime.now() - timedelta(hours=12),
             is_read=False
         )
-        
+
         # Pregnancy monitoring alert for Patient 5
         Alert(
             patient=patient5,
@@ -352,13 +352,13 @@ def add_user(username, password, role='patient'):
         password_hash=generate_password_hash(password),
         role=role
     )
-    
+
     # Create corresponding Patient or Doctor record
     if role == 'patient':
         Patient(user=user)
     elif role == 'doctor':
         Doctor(user=user)
-    
+
     return True
 
 @db_session
@@ -372,7 +372,7 @@ def validate_user(username, password):
 @db_session
 def list_all_users():
     """Return a list of all users (for administration)"""
-    return select(u for u in User)[:]
+    return list(User.select())
 
 @db_session
 def delete_user(user_id):
@@ -407,14 +407,14 @@ def update_patient_info(patient_id, risk_factors=None, medical_history=None, com
         patient = Patient[patient_id]
         if not patient:
             return False
-        
+
         if risk_factors is not None:
             patient.risk_factors = risk_factors
         if medical_history is not None:
             patient.medical_history = medical_history
         if comorbidities is not None:
             patient.comorbidities = comorbidities
-        
+
         return True
     except Exception as e:
         print(f"Error updating patient info: {e}")
@@ -427,7 +427,7 @@ def add_glucose_reading(patient_id, value, is_before_meal, notes=None):
     patient = Patient[patient_id]
     if not patient:
         return False
-    
+
     GlucoseReading(
         patient=patient,
         value=value,
@@ -435,13 +435,13 @@ def add_glucose_reading(patient_id, value, is_before_meal, notes=None):
         is_before_meal=is_before_meal,
         notes=notes or ""
     )
-    
+
     # Check glucose thresholds and create alerts for doctor
     check_glucose_thresholds_and_alert(patient_id)
-    
+
     # Also check medication compliance (glucose readings might indicate missed medications)
     check_medication_compliance(patient_id)
-    
+
     return True
 
 @db_session
@@ -450,10 +450,18 @@ def get_patient_glucose_readings(patient_id, days=30):
     patient = Patient[patient_id]
     if not patient:
         return []
-    
+
     since_date = datetime.now() - timedelta(days=days)
-    return select(gr for gr in patient.glucose_readings 
-                 if gr.measurement_time >= since_date).order_by(lambda gr: gr.measurement_time)[:]
+
+    # Use simple iteration to avoid Pony ORM decompiler issues
+    readings = []
+    for reading in patient.glucose_readings:
+        if reading.measurement_time >= since_date:
+            readings.append(reading)
+
+    # Sort by measurement time
+    readings.sort(key=lambda gr: gr.measurement_time)
+    return readings
 
 # Therapy functions
 @db_session
@@ -461,10 +469,10 @@ def add_therapy(patient_id, doctor_id, drug_name, daily_doses, dose_amount, dose
     """Add a new therapy prescribed by a doctor"""
     patient = Patient[patient_id]
     doctor = Doctor[doctor_id]
-    
+
     if not patient or not doctor:
         return False
-    
+
     Therapy(
         patient=patient,
         doctor=doctor,
@@ -483,8 +491,14 @@ def get_patient_active_therapies(patient_id):
     patient = Patient[patient_id]
     if not patient:
         return []
-    
-    return select(t for t in patient.therapies if t.is_active)[:]
+
+    # Use simple iteration to avoid Pony ORM decompiler issues
+    active_therapies = []
+    for therapy in patient.therapies:
+        if therapy.is_active:
+            active_therapies.append(therapy)
+
+    return active_therapies
 
 # Medication intake functions
 @db_session
@@ -492,14 +506,14 @@ def record_medication_intake(patient_id, therapy_id, dose_taken, notes=None, int
     """Record that a patient took their medication"""
     patient = Patient[patient_id]
     therapy = Therapy[therapy_id]
-    
+
     if not patient or not therapy:
         return False
-    
+
     # Use provided datetime or current time
     if intake_datetime is None:
         intake_datetime = datetime.now()
-    
+
     MedicationIntake(
         patient=patient,
         therapy=therapy,
@@ -507,10 +521,10 @@ def record_medication_intake(patient_id, therapy_id, dose_taken, notes=None, int
         dose_taken=dose_taken,
         notes=notes or ""
     )
-    
+
     # Check medication compliance after recording intake
     check_medication_compliance(patient_id)
-    
+
     return True
 
 # Symptom functions
@@ -520,7 +534,7 @@ def add_symptom(patient_id, name, description=None, severity=None):
     patient = Patient[patient_id]
     if not patient:
         return False
-    
+
     Symptom(
         patient=patient,
         name=name,
@@ -534,31 +548,79 @@ def add_symptom(patient_id, name, description=None, severity=None):
 @db_session
 def create_alert(patient_id, alert_type, message, severity='medium', doctor_id=None):
     """Create an alert for glucose levels or medication compliance"""
-    patient = Patient[patient_id]
-    doctor = Doctor[doctor_id] if doctor_id else None
-    
-    if not patient:
+    try:
+        patient = Patient.get(id=patient_id)
+        if not patient:
+            print(f"Patient with id {patient_id} not found")
+            return False
+
+        doctor = None
+        if doctor_id:
+            doctor = Doctor.get(id=doctor_id)
+            if not doctor:
+                print(f"Doctor with id {doctor_id} not found")
+
+        Alert(
+            patient=patient,
+            doctor=doctor,
+            alert_type=alert_type,
+            message=message,
+            severity=severity,
+            created_at=datetime.now()
+        )
+        return True
+    except Exception as e:
+        print(f"Error creating alert: {e}")
         return False
-    
-    Alert(
-        patient=patient,
-        doctor=doctor,
-        alert_type=alert_type,
-        message=message,
-        severity=severity,
-        created_at=datetime.now()
-    )
-    return True
+
+@db_session
+def create_doctor_alert(doctor_id, patient_id, alert_type, message, severity='medium'):
+    """Create an alert primarily for a doctor about a patient"""
+    try:
+        doctor = Doctor.get(id=doctor_id)
+        patient = Patient.get(id=patient_id)
+
+        if not doctor:
+            print(f"Doctor with id {doctor_id} not found")
+            return False
+        if not patient:
+            print(f"Patient with id {patient_id} not found")
+            return False
+
+        # Create alert associated with patient but intended for doctor
+        Alert(
+            patient=patient,
+            doctor=doctor,
+            alert_type=alert_type,
+            message=message,
+            severity=severity,
+            created_at=datetime.now()
+        )
+        return True
+    except Exception as e:
+        print(f"Error creating doctor alert: {e}")
+        return False
 
 @db_session
 def get_unread_alerts(doctor_id=None, patient_id=None):
     """Get unread alerts for a doctor or patient"""
     if doctor_id:
         doctor = Doctor[doctor_id]
-        return select(a for a in doctor.alerts if not a.is_read)[:]
+        unread_alerts = []
+        # Get all alerts where this doctor is assigned OR alerts for their patients
+        for alert in Alert.select():
+            if not alert.is_read and (alert.doctor and alert.doctor.id == doctor_id):
+                unread_alerts.append(alert)
+        return unread_alerts
     elif patient_id:
         patient = Patient[patient_id]
-        return select(a for a in patient.alerts if not a.is_read)[:]
+        unread_alerts = []
+        # Only get alerts for this patient that are NOT doctor-only alerts
+        for alert in patient.alerts:
+            if (not alert.is_read and
+                alert.alert_type not in ['patient_non_compliance', 'follow_up', 'pregnancy_monitoring']):
+                unread_alerts.append(alert)
+        return unread_alerts
     return []
 
 # Alert checking functions
@@ -568,16 +630,19 @@ def check_glucose_alerts(patient_id):
     patient = Patient[patient_id]
     if not patient:
         return
-    
+
     # Get recent glucose readings (last 24 hours)
-    recent_readings = select(gr for gr in patient.glucose_readings 
-                           if gr.measurement_time >= datetime.now() - timedelta(hours=24))[:]
-    
+    recent_readings = []
+    cutoff_time = datetime.now() - timedelta(hours=24)
+    for reading in patient.glucose_readings:
+        if reading.measurement_time >= cutoff_time:
+            recent_readings.append(reading)
+
     for reading in recent_readings:
         if reading.is_before_meal and (reading.value < 80 or reading.value > 130):
             severity = 'high' if reading.value < 70 or reading.value > 180 else 'medium'
             create_alert(
-                patient_id, 
+                patient_id,
                 'glucose_abnormal',
                 f"Glucose level {reading.value} mg/dL before meal (normal: 80-130 mg/dL)",
                 severity,
@@ -587,7 +652,7 @@ def check_glucose_alerts(patient_id):
             severity = 'high' if reading.value > 250 else 'medium'
             create_alert(
                 patient_id,
-                'glucose_abnormal', 
+                'glucose_abnormal',
                 f"Glucose level {reading.value} mg/dL after meal (should be <180 mg/dL)",
                 severity,
                 patient.assigned_doctor.id if patient.assigned_doctor else None
@@ -597,75 +662,103 @@ def check_glucose_alerts(patient_id):
 @db_session
 def check_medication_compliance(patient_id):
     """Check if patient is compliant with medication intake and create alerts if needed"""
-    patient = Patient[patient_id]
-    if not patient:
-        return
-    
-    # Get all active therapies for the patient
-    active_therapies = select(t for t in patient.therapies if t.is_active)[:]
-    
-    current_date = datetime.now().date()
-    
-    for therapy in active_therapies:
-        # Check last 3 days for each therapy
-        missing_days = 0
-        consecutive_missing_days = 0
-        
-        for i in range(3):  # Check last 3 days
-            check_date = current_date - timedelta(days=i)
-            
-            # Get expected intakes for this day (based on daily_doses)
-            expected_intakes = therapy.daily_doses
-            
-            # Get actual intakes for this day
-            actual_intakes = select(
-                mi for mi in therapy.medication_intakes 
-                if mi.intake_time.date() == check_date
-            ).count()
-            
-            # Check if patient is missing doses for this day
-            if actual_intakes < expected_intakes:
-                missing_days += 1
-                if i == 0:  # Most recent day
-                    consecutive_missing_days += 1
-                elif consecutive_missing_days == i:  # Consecutive missing
-                    consecutive_missing_days += 1
-        
-        # Create alerts based on missing patterns
-        if consecutive_missing_days >= 3:
-            # Alert for both patient and doctor after 3 consecutive days
-            create_alert(
-                patient_id,
-                'medication_compliance',
-                f"You haven't recorded taking {therapy.drug_name} for {consecutive_missing_days} consecutive days. Please remember to take your medication as prescribed.",
-                'high'
-            )
-            
-            if patient.assigned_doctor:
+    try:
+        patient = Patient.get(id=patient_id)
+        if not patient:
+            return
+
+        # Get all active therapies for the patient
+        active_therapies = []
+        for therapy in patient.therapies:
+            if therapy.is_active:
+                active_therapies.append(therapy)
+
+        if not active_therapies:
+            return
+
+        current_date = datetime.now().date()
+
+        for therapy in active_therapies:
+            # Check last 3 days for each therapy
+            missing_days = 0
+            consecutive_missing_days = 0
+
+            for i in range(3):  # Check last 3 days
+                check_date = current_date - timedelta(days=i)
+
+                # Get expected intakes for this day (based on daily_doses)
+                expected_intakes = therapy.daily_doses
+
+                # Get actual intakes for this day
+                actual_intakes = 0
+                for mi in therapy.medication_intakes:
+                    if mi.intake_time.date() == check_date:
+                        actual_intakes += 1
+
+                # Check if patient is missing doses for this day
+                if actual_intakes < expected_intakes:
+                    missing_days += 1
+                    if i == 0:  # Most recent day
+                        consecutive_missing_days += 1
+                    elif consecutive_missing_days == i:  # Consecutive missing
+                        consecutive_missing_days += 1
+
+            # Create alerts based on missing patterns
+            if consecutive_missing_days >= 3:
+                # Alert for both patient and doctor after 3 consecutive days
                 create_alert(
                     patient_id,
-                    'patient_non_compliance',
-                    f"Patient {patient.user.username} has not recorded taking {therapy.drug_name} for {consecutive_missing_days} consecutive days.",
-                    'high',
-                    patient.assigned_doctor.id
+                    'medication_compliance',
+                    f"You haven't recorded taking {therapy.drug_name} for {consecutive_missing_days} consecutive days. Please remember to take your medication as prescribed.",
+                    'high'
                 )
-        
-        elif missing_days >= 2:
-            # Reminder alert for patient
-            create_alert(
-                patient_id,
-                'medication_reminder',
-                f"Reminder: Please remember to record your {therapy.drug_name} intake. You've missed recording for {missing_days} days in the last 3 days.",
-                'medium'
-            )
+
+                if patient.assigned_doctor:
+                    create_doctor_alert(
+                        patient.assigned_doctor.id,
+                        patient_id,
+                        'patient_non_compliance',
+                        f"Patient {patient.user.username} has not recorded taking {therapy.drug_name} for {consecutive_missing_days} consecutive days.",
+                        'high'
+                    )
+
+            elif missing_days >= 2:
+                # Reminder alert for patient
+                create_alert(
+                    patient_id,
+                    'medication_reminder',
+                    f"Reminder: Please remember to record your {therapy.drug_name} intake. You've missed recording for {missing_days} days in the last 3 days.",
+                    'medium'
+                )
+    except Exception as e:
+        print(f"Error checking compliance for patient {patient_id}: {e}")
+        return
 
 @db_session
 def check_all_patients_compliance():
     """Check medication compliance for all patients - to be called periodically"""
-    patients = select(p for p in Patient)[:]
-    
-    for patient in patients:
-        check_medication_compliance(patient.id)
+    try:
+        # Use a different approach to avoid Pony ORM decompiler issues
+        patients = Patient.select()
+        patient_list = list(patients)
+
+        if not patient_list:
+            print("No patients found in database")
+            return
+
+        print(f"Checking compliance for {len(patient_list)} patients")
+
+        for patient in patient_list:
+            try:
+                check_medication_compliance(patient.id)
+            except Exception as e:
+                print(f"Error checking compliance for patient {patient.id}: {e}")
+                continue
+
+        print("Compliance check completed for all patients")
+    except Exception as e:
+        print(f"Error in check_all_patients_compliance: {e}")
+        return
 
 @db_session
 def get_therapy_compliance_status(patient_id, days=7):
@@ -673,36 +766,41 @@ def get_therapy_compliance_status(patient_id, days=7):
     patient = Patient[patient_id]
     if not patient:
         return []
-    
-    active_therapies = select(t for t in patient.therapies if t.is_active)[:]
+
+    # Use simple iteration to avoid Pony ORM decompiler issues
+    active_therapies = []
+    for therapy in patient.therapies:
+        if therapy.is_active:
+            active_therapies.append(therapy)
+
     compliance_data = []
-    
+
     current_date = datetime.now().date()
-    
+
     for therapy in active_therapies:
         total_expected = 0
         total_actual = 0
         missing_days = []
-        
+
         for i in range(days):
             check_date = current_date - timedelta(days=i)
-            
+
             # Expected intakes for this day
             expected_daily = therapy.daily_doses
             total_expected += expected_daily
-            
+
             # Actual intakes for this day
-            actual_daily = select(
-                mi for mi in therapy.medication_intakes 
-                if mi.intake_time.date() == check_date
-            ).count()
+            actual_daily = 0
+            for mi in therapy.medication_intakes:
+                if mi.intake_time.date() == check_date:
+                    actual_daily += 1
             total_actual += actual_daily
-            
+
             if actual_daily < expected_daily:
                 missing_days.append(check_date)
-        
+
         compliance_percentage = (total_actual / total_expected * 100) if total_expected > 0 else 0
-        
+
         compliance_data.append({
             'therapy': therapy,
             'compliance_percentage': round(compliance_percentage, 1),
@@ -711,7 +809,7 @@ def get_therapy_compliance_status(patient_id, days=7):
             'missing_days': missing_days,
             'status': 'good' if compliance_percentage >= 80 else 'poor' if compliance_percentage < 60 else 'moderate'
         })
-    
+
     return compliance_data
 
 @db_session
@@ -720,25 +818,28 @@ def check_glucose_thresholds_and_alert(patient_id):
     patient = Patient[patient_id]
     if not patient:
         return
-    
+
     # Get recent glucose readings (last 24 hours)
-    recent_readings = select(gr for gr in patient.glucose_readings 
-                           if gr.measurement_time >= datetime.now() - timedelta(hours=24))[:]
-    
+    recent_readings = []
+    cutoff_time = datetime.now() - timedelta(hours=24)
+    for reading in patient.glucose_readings:
+        if reading.measurement_time >= cutoff_time:
+            recent_readings.append(reading)
+
     critical_readings = []
     high_readings = []
-    
+
     for reading in recent_readings:
         # Critical thresholds (immediate attention)
         if (reading.is_before_meal and (reading.value < 60 or reading.value > 200)) or \
            (not reading.is_before_meal and reading.value > 300):
             critical_readings.append(reading)
-        
+
         # High concern thresholds
         elif (reading.is_before_meal and (reading.value < 70 or reading.value > 160)) or \
              (not reading.is_before_meal and reading.value > 220):
             high_readings.append(reading)
-    
+
     # Create alerts for doctor with different severity
     if critical_readings and patient.assigned_doctor:
         for reading in critical_readings:
@@ -750,7 +851,7 @@ def check_glucose_thresholds_and_alert(patient_id):
                 'high',
                 patient.assigned_doctor.id
             )
-    
+
     if high_readings and patient.assigned_doctor:
         # Summarize high readings in one alert to avoid spam
         reading_summary = ", ".join([f"{r.value} mg/dL" for r in high_readings])
@@ -765,32 +866,32 @@ def check_glucose_thresholds_and_alert(patient_id):
 @db_session
 def clear_compliance_alerts_for_patient(patient_id):
     """
-    Rimuove tutti gli alert di compliance per un paziente quando riprende 
+    Rimuove tutti gli alert di compliance per un paziente quando riprende
     l'aderenza alla terapia
     """
     try:
         patient = Patient[patient_id]
         if not patient:
             return False
-        
-        # Trova tutti gli alert di compliance non risolti per questo paziente
-        compliance_alerts = select(
-            a for a in Alert 
-            if a.patient == patient 
-            and a.alert_type in ['compliance_issue', 'medication_missed']
-            and a.resolved_at is None
-        )[:]
-        
+
+        # Find all unresolved compliance alerts for this patient
+        compliance_alerts = []
+        for alert in Alert.select():
+            if (alert.patient == patient and
+                alert.alert_type in ['compliance_issue', 'medication_missed'] and
+                alert.resolved_at is None):
+                compliance_alerts.append(alert)
+
         # Risolvi tutti gli alert di compliance
         for alert in compliance_alerts:
             alert.resolved_at = datetime.now()
             alert.is_read = True
-        
-        print(f"✅ Cleared {len(compliance_alerts)} compliance alerts for patient {patient.user.username}")
+
+        print(f" Cleared {len(compliance_alerts)} compliance alerts for patient {patient.user.username}")
         return True
-        
+
     except Exception as e:
-        print(f"❌ Error clearing compliance alerts: {e}")
+        print(f" Error clearing compliance alerts: {e}")
         return False
 
 @db_session
@@ -803,26 +904,27 @@ def check_and_clear_compliance_alerts(patient_id):
         patient = Patient[patient_id]
         if not patient:
             return False
-        
-        # Controlla se il paziente è ora compliant (ha preso farmaci negli ultimi 2 giorni)
-        recent_intakes = select(
-            mi for mi in MedicationIntake 
-            if mi.therapy.patient == patient 
-            and mi.intake_time >= datetime.now() - timedelta(days=2)
-        ).count()
-        
+
+        # Check if patient is now compliant (has taken medications in last 2 days)
+        recent_intakes = 0
+        cutoff_time = datetime.now() - timedelta(days=2)
+        for mi in MedicationIntake.select():
+            if (mi.therapy.patient == patient and
+                mi.intake_time >= cutoff_time):
+                recent_intakes += 1
+
         # Se ha preso farmaci di recente, rimuovi gli alert di compliance
         if recent_intakes > 0:
             return clear_compliance_alerts_for_patient(patient_id)
-        
+
         return False
-        
+
     except Exception as e:
-        print(f"❌ Error checking compliance for alert cleanup: {e}")
+        print(f"Error checking compliance for alert cleanup: {e}")
         return False
 
 '''
     Questo file (operations.py) contiene tutte le operazioni del database per il sistema.
-    Include funzioni per gestire utenti, pazienti, dottori, letture della glicemia, 
+    Include funzioni per gestire utenti, pazienti, dottori, letture della glicemia,
     terapie, aderenza ai farmaci e sistema di allerte mediche.
 '''

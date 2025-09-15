@@ -8,6 +8,8 @@ def register_callbacks(app):
     from controller.patient_callbacks import register_patient_callbacks
     from controller.doctor_callbacks import register_doctor_callbacks
     from controller.routing import register_routing_callbacks
+    from controller.modal_callbacks import register_modal_callbacks
+    from controller.profile_callbacks import register_profile_callbacks
 
     @app.callback(
         dash.Output('navbar-container', 'children'),
@@ -27,9 +29,11 @@ def register_callbacks(app):
     register_patient_callbacks(app)
     register_doctor_callbacks(app)
     register_routing_callbacks(app)
+    register_modal_callbacks(app)
+    register_profile_callbacks(app)
 
 '''
-    Questo file (callbacks.py) serve per collegare tutte le funzionalità interattive 
-    dell'applicazione Dash. In pratica, registra tutte le "callback" (funzioni che aggiornano 
+    Questo file (callbacks.py) serve per collegare tutte le funzionalità interattive
+    dell'applicazione Dash. In pratica, registra tutte le "callback" (funzioni che aggiornano
     l'interfaccia utente in base alle azioni dell'utente o alla navigazione).
 '''
