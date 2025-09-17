@@ -173,7 +173,15 @@ def get_patient_detail_content():
                                         placeholder="hypertension, etc.",
                                         rows=2
                                     )
-                                ])
+                                ], width=6),
+                                dbc.Col([
+                                    dbc.Label("Doctor Notes"),
+                                    dbc.Textarea(
+                                        id="update-doctor-notes",
+                                        placeholder="Add clinical notes or observations...",
+                                        rows=2
+                                    )
+                                ], width=6)
                             ], className="mb-3"),
                             dbc.Button("Update Patient Info", id="update-patient-info-btn", color="primary"),
                             dbc.Button("Add Note", id="open-note-modal", color="secondary", className="ms-2"),

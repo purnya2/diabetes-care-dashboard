@@ -35,6 +35,7 @@ class Patient(db.Entity):
     risk_factors = Optional(str)  # smoking, alcohol, drugs, obesity
     medical_history = Optional(str)  # previous pathologies
     comorbidities = Optional(str)  # hypertension, etc.
+    notes = Optional(str)  # doctor's clinical notes
     
     # Relationships
     glucose_readings = Set('GlucoseReading', reverse='patient')

@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from dash import html, dash_table
 from flask_login import current_user
-from pony.orm import db_session, select
+from pony.orm import db_session
 from datetime import datetime, timedelta
 
 from model import (
@@ -18,7 +18,7 @@ from view.patient_dashboard import (
 
 def register_patient_callbacks(app):
     """Register patient dashboard callbacks"""
-
+    
     # Tab content callback
     @app.callback(
         Output('patient-tab-content', 'children'),
@@ -32,7 +32,7 @@ def register_patient_callbacks(app):
         elif active_tab == "alerts":
             return get_alerts_tab()
         return html.Div("Select a tab")
-
+    
     # Update dashboard stats
     @app.callback(
         [Output('latest-glucose-value', 'children'),
@@ -45,32 +45,32 @@ def register_patient_callbacks(app):
     def update_patient_stats(pathname):
         if not current_user.is_authenticated or current_user.role != 'patient':
             return "--", "--", "--", "--"
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return "--", "--", "--", "--"
-
+        
         # Latest glucose reading
         recent_readings = get_patient_glucose_readings(patient.id, days=1)
         latest_glucose = recent_readings[-1].value if recent_readings else "--"
-
+        
         # Active therapies count
         active_therapies = get_patient_active_therapies(patient.id)
         therapies_count = len(active_therapies)
-
+        
         # Week average glucose
         week_readings = get_patient_glucose_readings(patient.id, days=7)
         if week_readings:
             week_avg = round(sum(r.value for r in week_readings) / len(week_readings), 1)
         else:
             week_avg = "--"
-
+        
         # Unread alerts
         unread_alerts = get_unread_alerts(patient_id=patient.id)
         alerts_count = len(unread_alerts)
-
+        
         return str(latest_glucose), str(therapies_count), str(week_avg), str(alerts_count)
-
+    
     # Populate therapy dropdown
     @app.callback(
         Output('therapy-select', 'options'),
@@ -80,11 +80,11 @@ def register_patient_callbacks(app):
     def update_therapy_options(active_tab):
         if not current_user.is_authenticated or current_user.role != 'patient':
             return []
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return []
-
+        
         active_therapies = get_patient_active_therapies(patient.id)
         return [
             {
@@ -93,10 +93,12 @@ def register_patient_callbacks(app):
             }
             for therapy in active_therapies
         ]
-
+    
     # Log glucose reading callback
     @app.callback(
-        Output('patient-form-output', 'children', allow_duplicate=True),
+        [Output('patient-form-output', 'children', allow_duplicate=True),
+         Output('latest-glucose-value', 'children', allow_duplicate=True),
+         Output('week-avg-glucose', 'children', allow_duplicate=True)],
         [Input('log-glucose-btn', 'n_clicks')],
         [State('glucose-value', 'value'),
          State('glucose-timing', 'value'),
@@ -106,40 +108,54 @@ def register_patient_callbacks(app):
     @db_session
     def log_glucose_reading(n_clicks, glucose_value, is_before_meal, notes):
         if not n_clicks or not glucose_value:
-            return ""
-
+            return "", dash.no_update, dash.no_update
+        
         if not current_user.is_authenticated or current_user.role != 'patient':
-            return dbc.Alert("Access denied", color="danger")
-
+            return dbc.Alert("Access denied", color="danger"), dash.no_update, dash.no_update
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
-            return dbc.Alert("Patient record not found", color="danger")
-
+            return dbc.Alert("Patient record not found", color="danger"), dash.no_update, dash.no_update
+        
         # Validate glucose value
         if glucose_value < 30 or glucose_value > 600:
-            return dbc.Alert("Please enter a valid glucose value (30-600 mg/dL)", color="warning")
-
+            return dbc.Alert("Please enter a valid glucose value (30-600 mg/dL)", color="warning"), dash.no_update, dash.no_update
+        
         # Add glucose reading
         success = add_glucose_reading(patient.id, glucose_value, is_before_meal, notes)
-
+        
         if success:
             # Check for alerts after adding reading
             check_glucose_alerts(patient.id)
-
+            
+            # Update latest glucose and weekly average
+            recent_readings = get_patient_glucose_readings(patient.id, days=1)
+            latest_glucose = str(recent_readings[-1].value) if recent_readings else "--"
+            
+            week_readings = get_patient_glucose_readings(patient.id, days=7)
+            if week_readings:
+                week_avg = str(round(sum(r.value for r in week_readings) / len(week_readings), 1))
+            else:
+                week_avg = "--"
+            
             # Determine if reading is concerning
             alert_type = ""
             if is_before_meal and (glucose_value < 80 or glucose_value > 130):
                 alert_type = " - Outside normal range for before meals (80-130 mg/dL)"
             elif not is_before_meal and glucose_value > 180:
                 alert_type = " - Above recommended level for after meals (<180 mg/dL)"
-
-            return dbc.Alert(
-                f"Glucose reading logged successfully: {glucose_value} mg/dL{alert_type}",
-                color="success" if not alert_type else "warning"
+            
+            return (
+                dbc.Alert(
+                    f"Glucose reading logged successfully: {glucose_value} mg/dL{alert_type}",
+                    color="success" if not alert_type else "warning"
+                ),
+                latest_glucose,
+                week_avg
             )
         else:
-            return dbc.Alert("Failed to log glucose reading", color="danger")
-
+            return dbc.Alert("Failed to log glucose reading", color="danger"), dash.no_update, dash.no_update
+    
     # Record medication intake callback
     @app.callback(
         Output('patient-form-output', 'children', allow_duplicate=True),
@@ -155,14 +171,14 @@ def register_patient_callbacks(app):
     def record_medication(n_clicks, therapy_id, dose_taken, med_date, med_time, notes):
         if not n_clicks or not therapy_id or dose_taken is None:
             return ""
-
+        
         if not current_user.is_authenticated or current_user.role != 'patient':
             return dbc.Alert("Access denied", color="danger")
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return dbc.Alert("Patient record not found", color="danger")
-
+        
         # Combine date and time into datetime
         try:
             if med_date and med_time:
@@ -175,22 +191,22 @@ def register_patient_callbacks(app):
                 intake_datetime = datetime.now()
         except ValueError:
             return dbc.Alert("Invalid date or time format", color="warning")
-
+        
         # Record medication intake
         success = record_medication_intake(patient.id, therapy_id, dose_taken, notes, intake_datetime)
-
+        
         # Check and clear compliance alerts if patient is now compliant
         if success:
             check_and_clear_compliance_alerts(patient.id)
-
+        
         if success:
             return dbc.Alert(
-                f"Medication intake recorded successfully for {med_date} at {med_time}",
+                f"Medication intake recorded successfully for {med_date} at {med_time}", 
                 color="success"
             )
         else:
             return dbc.Alert("Failed to record medication intake", color="danger")
-
+    
     # Log symptom callback
     @app.callback(
         Output('patient-form-output', 'children', allow_duplicate=True),
@@ -204,22 +220,26 @@ def register_patient_callbacks(app):
     def log_symptom(n_clicks, symptom_name, severity, description):
         if not n_clicks or not symptom_name:
             return ""
-
+        
         if not current_user.is_authenticated or current_user.role != 'patient':
             return dbc.Alert("Access denied", color="danger")
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return dbc.Alert("Patient record not found", color="danger")
-
+        
+        # Ensure description is None if empty string
+        if description == "":
+            description = None
+        
         # Add symptom
         success = add_symptom(patient.id, symptom_name, description, severity)
-
+        
         if success:
             return dbc.Alert(f"Symptom '{symptom_name}' logged successfully", color="success")
         else:
             return dbc.Alert("Failed to log symptom", color="danger")
-
+    
     # Active therapies table
     @app.callback(
         Output('active-therapies-table', 'children'),
@@ -229,19 +249,19 @@ def register_patient_callbacks(app):
     def update_active_therapies(active_tab):
         if active_tab != "therapies":
             return ""
-
+        
         if not current_user.is_authenticated or current_user.role != 'patient':
             return "Access denied"
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return "Patient record not found"
-
+        
         therapies = get_patient_active_therapies(patient.id)
-
+        
         if not therapies:
             return dbc.Alert("No active therapies prescribed", color="info")
-
+        
         # Create table data
         table_data = []
         for therapy in therapies:
@@ -252,7 +272,7 @@ def register_patient_callbacks(app):
                 'Instructions': therapy.instructions or "No special instructions",
                 'Start Date': therapy.start_date.strftime('%d/%m/%Y')
             })
-
+        
         return dash_table.DataTable(
             data=table_data,
             columns=[
@@ -265,7 +285,7 @@ def register_patient_callbacks(app):
             style_cell={'textAlign': 'left', 'fontSize': '14px'},
             style_header={'backgroundColor': 'lightblue'}
         )
-
+    
     # Patient alerts
     @app.callback(
         Output('patient-alerts-list', 'children'),
@@ -275,24 +295,24 @@ def register_patient_callbacks(app):
     def update_patient_alerts(active_tab):
         if active_tab != "alerts":
             return ""
-
+        
         if not current_user.is_authenticated or current_user.role != 'patient':
             return "Access denied"
-
+        
         patient = get_patient_by_user_id(current_user.id)
         if not patient:
             return "Patient record not found"
-
+        
         alerts = get_unread_alerts(patient_id=patient.id)
-
+        
         if not alerts:
             return dbc.Alert("No new alerts", color="success")
-
+        
         alert_components = []
         for alert in alerts:
             color_map = {'low': 'info', 'medium': 'warning', 'high': 'danger'}
             color = color_map.get(alert.severity, 'info')
-
+            
             alert_components.append(
                 dbc.Alert([
                     html.H6(f"{alert.alert_type.replace('_', ' ').title()}", className="alert-heading"),
@@ -300,96 +320,8 @@ def register_patient_callbacks(app):
                     html.Small(f"Created: {alert.created_at.strftime('%d/%m/%Y %H:%M')}")
                 ], color=color, className="mb-2")
             )
-
+        
         return alert_components
-
-    # Medication schedule callback
-    @app.callback(
-        Output('medication-schedule', 'children'),
-        Input('patient-tabs', 'active_tab')
-    )
-    @db_session
-    def update_medication_schedule(active_tab):
-        if active_tab != "therapies":
-            return ""
-
-        if not current_user.is_authenticated or current_user.role != 'patient':
-            return "Access denied"
-
-        patient = get_patient_by_user_id(current_user.id)
-        if not patient:
-            return "Patient record not found"
-
-        active_therapies = get_patient_active_therapies(patient.id)
-
-        if not active_therapies:
-            return dbc.Alert("No active therapies to schedule", color="info")
-
-        # Create medication schedule for today
-        from datetime import datetime, time
-
-        schedule_items = []
-
-        # Generate schedule based on daily doses
-        for therapy in active_therapies:
-            doses_per_day = therapy.daily_doses
-
-            # Create time slots throughout the day
-            time_slots = []
-            if doses_per_day == 1:
-                time_slots = ["08:00"]
-            elif doses_per_day == 2:
-                time_slots = ["08:00", "20:00"]
-            elif doses_per_day == 3:
-                time_slots = ["08:00", "14:00", "20:00"]
-            elif doses_per_day == 4:
-                time_slots = ["08:00", "12:00", "16:00", "20:00"]
-            else:
-                # For more than 4 doses, distribute evenly
-                interval = 24 // doses_per_day
-                time_slots = [f"{(8 + i * interval) % 24:02d}:00" for i in range(doses_per_day)]
-
-            for time_slot in time_slots:
-                # Check if dose was already taken today
-                from model import MedicationIntake
-                today = datetime.now().date()
-
-                # Use simple iteration to avoid Pony ORM decompiler issues
-                taken_today = []
-                for mi in MedicationIntake.select():
-                    if (mi.patient.id == patient.id and
-                        mi.therapy.id == therapy.id and
-                        mi.intake_time.date() == today and
-                        mi.intake_time.time().strftime("%H:%M") == time_slot):
-                        taken_today.append(mi)
-
-                is_taken = len(taken_today) > 0
-                status_color = "success" if is_taken else "light"
-                status_text = "✓ Taken" if is_taken else "Pending"
-
-                schedule_items.append(
-                    dbc.ListGroupItem([
-                        dbc.Row([
-                            dbc.Col([
-                                html.Strong(time_slot),
-                                html.Br(),
-                                html.Small(f"{therapy.drug_name}")
-                            ], width=6),
-                            dbc.Col([
-                                html.P(f"{therapy.dose_amount} {therapy.dose_unit}"),
-                                dbc.Badge(status_text, color=status_color)
-                            ], width=6)
-                        ])
-                    ], color=status_color if is_taken else None)
-                )
-
-        return html.Div([
-            html.H5(f"Today's Medication Schedule - {datetime.now().strftime('%B %d, %Y')}", className="mb-3"),
-            dbc.ListGroup(schedule_items),
-            html.Hr(),
-            html.Small("Use the 'Record Medication' form above to log when you take your medications.",
-                      className="text-muted")
-        ])
 
 def get_glucose_status(value, is_before_meal):
     """Helper function to determine glucose status"""

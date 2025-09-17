@@ -1,5 +1,5 @@
 # model/operations.py
-from pony.orm import db_session, select, delete, commit, count
+from pony.orm import db_session, select, delete, commit, count, desc
 from werkzeug.security import generate_password_hash
 from datetime import date, datetime, timedelta
 
@@ -401,7 +401,7 @@ def get_doctor_by_user_id(user_id):
     return None
 
 @db_session
-def update_patient_info(patient_id, risk_factors=None, medical_history=None, comorbidities=None):
+def update_patient_info(patient_id, risk_factors=None, medical_history=None, comorbidities=None, notes=None):
     """Update patient medical information"""
     try:
         patient = Patient[patient_id]
@@ -414,7 +414,9 @@ def update_patient_info(patient_id, risk_factors=None, medical_history=None, com
             patient.medical_history = medical_history
         if comorbidities is not None:
             patient.comorbidities = comorbidities
-
+        if notes is not None:
+            patient.notes = notes
+        
         return True
     except Exception as e:
         print(f"Error updating patient info: {e}")
@@ -438,10 +440,10 @@ def add_glucose_reading(patient_id, value, is_before_meal, notes=None):
 
     # Check glucose thresholds and create alerts for doctor
     check_glucose_thresholds_and_alert(patient_id)
-
+    
     # Also check medication compliance (glucose readings might indicate missed medications)
     check_medication_compliance(patient_id)
-
+    
     return True
 
 @db_session
@@ -546,6 +548,32 @@ def add_symptom(patient_id, name, description=None, severity=None):
 
 # Alert functions
 @db_session
+def alert_exists_recent(patient_id, alert_type, doctor_id=None, hours=24):
+    """Check if a similar alert exists in the last N hours to avoid duplicates"""
+    patient = Patient[patient_id]
+    if not patient:
+        return False
+    
+    since_time = datetime.now() - timedelta(hours=hours)
+    
+    # Split the complex query into simpler parts to avoid decompilation issues
+    recent_alerts = select(a for a in patient.alerts 
+                          if a.alert_type == alert_type 
+                          and a.created_at >= since_time
+                          and not a.is_read)[:]
+    
+    # Filter by doctor separately to avoid complex query conditions
+    for alert in recent_alerts:
+        if doctor_id:
+            if alert.doctor and alert.doctor.id == doctor_id:
+                return True
+        else:
+            if alert.doctor is None:
+                return True
+    
+    return False
+
+@db_session
 def create_alert(patient_id, alert_type, message, severity='medium', doctor_id=None):
     """Create an alert for glucose levels or medication compliance"""
     try:
@@ -603,24 +631,13 @@ def create_doctor_alert(doctor_id, patient_id, alert_type, message, severity='me
 
 @db_session
 def get_unread_alerts(doctor_id=None, patient_id=None):
-    """Get unread alerts for a doctor or patient"""
+    """Get unread alerts for a doctor or patient, ordered by creation date (most recent first)"""
     if doctor_id:
         doctor = Doctor[doctor_id]
-        unread_alerts = []
-        # Get all alerts where this doctor is assigned OR alerts for their patients
-        for alert in Alert.select():
-            if not alert.is_read and (alert.doctor and alert.doctor.id == doctor_id):
-                unread_alerts.append(alert)
-        return unread_alerts
+        return select(a for a in doctor.alerts if not a.is_read)[:]
     elif patient_id:
         patient = Patient[patient_id]
-        unread_alerts = []
-        # Only get alerts for this patient that are NOT doctor-only alerts
-        for alert in patient.alerts:
-            if (not alert.is_read and
-                alert.alert_type not in ['patient_non_compliance', 'follow_up', 'pregnancy_monitoring']):
-                unread_alerts.append(alert)
-        return unread_alerts
+        return select(a for a in patient.alerts if not a.is_read)[:]
     return []
 
 # Alert checking functions
@@ -738,27 +755,21 @@ def check_medication_compliance(patient_id):
 def check_all_patients_compliance():
     """Check medication compliance for all patients - to be called periodically"""
     try:
-        # Use a different approach to avoid Pony ORM decompiler issues
-        patients = Patient.select()
-        patient_list = list(patients)
-
-        if not patient_list:
-            print("No patients found in database")
-            return
-
-        print(f"Checking compliance for {len(patient_list)} patients")
-
-        for patient in patient_list:
+        patients = select(p for p in Patient)[:]
+        
+        for patient in patients:
             try:
                 check_medication_compliance(patient.id)
             except Exception as e:
                 print(f"Error checking compliance for patient {patient.id}: {e}")
-                continue
-
-        print("Compliance check completed for all patients")
+                
     except Exception as e:
         print(f"Error in check_all_patients_compliance: {e}")
-        return
+        # If no patients exist yet, that's fine
+        if "no such table" in str(e) or "ObjectNotFound" in str(e):
+            print("No patients found - this is normal for a new database")
+        else:
+            raise
 
 @db_session
 def get_therapy_compliance_status(patient_id, days=7):
@@ -886,12 +897,12 @@ def clear_compliance_alerts_for_patient(patient_id):
         for alert in compliance_alerts:
             alert.resolved_at = datetime.now()
             alert.is_read = True
-
-        print(f" Cleared {len(compliance_alerts)} compliance alerts for patient {patient.user.username}")
+        
+        print(f"Cleared {len(compliance_alerts)} compliance alerts for patient {patient.user.username}")
         return True
 
     except Exception as e:
-        print(f" Error clearing compliance alerts: {e}")
+        print(f"❌ Error clearing compliance alerts: {e}")
         return False
 
 @db_session

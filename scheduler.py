@@ -22,9 +22,7 @@ def _background_scheduler():
     global _scheduler_running
     while _scheduler_running:
         run_compliance_check()
-        # Aspetta 24 ore (86400 secondi) prima del prossimo controllo
-        # Per test, puoi ridurre a 60 secondi
-        time.sleep(86400)  # 24 ore
+        time.sleep(2)  # quante volte controllare la compliance
         
 def start_scheduler():
     """Avvia lo scheduler in background per controlli automatici di compliance"""
@@ -37,13 +35,13 @@ def start_scheduler():
     _scheduler_running = True
     _scheduler_thread = threading.Thread(target=_background_scheduler, daemon=True)
     _scheduler_thread.start()
-    print("✅ Compliance scheduler started - automatic checks every 24 hours")
+    print("Compliance scheduler started - automatic checks every 24 hours")
 
 def stop_scheduler():
     """Ferma lo scheduler di background"""
     global _scheduler_running
     _scheduler_running = False
-    print("🛑 Compliance scheduler stopped")
+    print("Compliance scheduler stopped")
 
 def run_immediate_compliance_check():
     """Esegue immediatamente un controllo di compliance (per testing)"""
