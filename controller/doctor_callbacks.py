@@ -131,7 +131,6 @@ def register_doctor_callbacks(app):
             ],
             style_cell={'textAlign': 'left', 'fontSize': '14px'},
             style_header={'backgroundColor': 'lightblue'},
-            row_selectable='single',
             id='patients-table-component'
         )
     
