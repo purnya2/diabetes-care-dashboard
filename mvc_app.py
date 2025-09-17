@@ -33,16 +33,12 @@ login_manager.login_view = '/login'
 def load_user(user_id):
     return get_user(user_id)
 
-# Set app layout
 app.layout = get_app_layout()
 
-# Register all callbacks
 register_callbacks(app)
 
-# Start the compliance monitoring scheduler
-start_scheduler()  # Temporarily disabled due to POP_JUMP_IF_NOT_NONE error in compliance checks
+start_scheduler()  
 
-# Run the app
 if __name__ == '__main__':
     print("Starting Dash MVC Application...")
     print("Access the application at http://127.0.0.1:8050/")

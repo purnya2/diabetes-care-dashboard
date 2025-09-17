@@ -755,6 +755,9 @@ def check_medication_compliance(patient_id):
 def check_all_patients_compliance():
     """Check medication compliance for all patients - to be called periodically"""
     try:
+        # First, clear all existing compliance alerts to prevent duplicates
+        clear_all_compliance_alerts()
+        
         patients = select(p for p in Patient)[:]
         
         for patient in patients:
@@ -933,6 +936,75 @@ def check_and_clear_compliance_alerts(patient_id):
     except Exception as e:
         print(f"Error checking compliance for alert cleanup: {e}")
         return False
+
+@db_session
+def clear_all_compliance_alerts():
+    """
+    Clear all existing compliance-related alerts before running new compliance checks.
+    This prevents exponential accumulation of duplicate alerts.
+    """
+    try:
+        # Define compliance-related alert types
+        compliance_alert_types = [
+            'medication_compliance',
+            'patient_non_compliance', 
+            'medication_reminder',
+            'compliance_issue',
+            'medication_missed'
+        ]
+        
+        # Get all alerts and filter manually to avoid complex Pony ORM queries
+        # Use a fresh query each time to avoid transaction conflicts
+        cleared_count = 0
+        
+        # Process alerts in small batches to avoid long-running transactions
+        batch_size = 10
+        while True:
+            batch_cleared = 0
+            
+            # Get a fresh batch of unresolved compliance alerts
+            try:
+                alerts_batch = []
+                for alert in Alert.select():
+                    if (alert.resolved_at is None and 
+                        alert.alert_type in compliance_alert_types):
+                        alerts_batch.append(alert)
+                        if len(alerts_batch) >= batch_size:
+                            break
+                
+                if not alerts_batch:
+                    break  # No more alerts to process
+                
+                # Update this batch
+                for alert in alerts_batch:
+                    try:
+                        # Check if alert is still unresolved (avoid race conditions)
+                        if alert.resolved_at is None:
+                            alert.resolved_at = datetime.now()
+                            alert.is_read = True
+                            batch_cleared += 1
+                    except Exception:
+                        # Skip this alert if there's a transaction conflict
+                        continue
+                
+                cleared_count += batch_cleared
+                
+                # If we processed less than batch_size, we're done
+                if len(alerts_batch) < batch_size:
+                    break
+                    
+            except Exception as e:
+                # If there's any transaction error, just break and report what we cleared
+                print(f"Transaction conflict during alert clearing: {e}")
+                break
+        
+        if cleared_count > 0:
+            print(f"Cleared {cleared_count} existing compliance alerts before generating new ones")
+        return cleared_count
+        
+    except Exception as e:
+        print(f"Error clearing all compliance alerts: {e}")
+        return 0
 
 '''
     Questo file (operations.py) contiene tutte le operazioni del database per il sistema.

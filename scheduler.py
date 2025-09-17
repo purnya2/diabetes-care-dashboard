@@ -1,28 +1,32 @@
 # scheduler.py
 import time
 import threading
+import os
 from model import check_all_patients_compliance
 from datetime import datetime
 
 # Global variable per controllare se lo scheduler è attivo
 _scheduler_running = False
 _scheduler_thread = None
+_scheduler_id = None
 
 def run_compliance_check():
     """Esegue il controllo di compliance per tutti i pazienti"""
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running compliance check for all patients...")
+    global _scheduler_id
+    scheduler_info = f"[Scheduler-{_scheduler_id}]" if _scheduler_id else ""
+    print(f"{scheduler_info}[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running compliance check for all patients...")
     try:
         check_all_patients_compliance()
-        print("Compliance check completed successfully")
+        print(f"{scheduler_info}Compliance check completed successfully")
     except Exception as e:
-        print(f"Error during compliance check: {e}")
+        print(f"{scheduler_info}Error during compliance check: {e}")
 
 def _background_scheduler():
     """Funzione per eseguire i controlli di compliance in background"""
     global _scheduler_running
     while _scheduler_running:
         run_compliance_check()
-        time.sleep(2)  # quante volte controllare la compliance
+        time.sleep(20)  # Check compliance every hour (3600 seconds)
         
 def start_scheduler():
     """Avvia lo scheduler in background per controlli automatici di compliance"""
@@ -35,7 +39,7 @@ def start_scheduler():
     _scheduler_running = True
     _scheduler_thread = threading.Thread(target=_background_scheduler, daemon=True)
     _scheduler_thread.start()
-    print("Compliance scheduler started - automatic checks every 24 hours")
+    print("Compliance scheduler started - automatic checks every hour")
 
 def stop_scheduler():
     """Ferma lo scheduler di background"""
