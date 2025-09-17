@@ -261,7 +261,6 @@ def get_prescribe_therapy_tab():
                                 ])
                             ], className="mb-3"),
                             dbc.Button("Prescribe Therapy", id="prescribe-therapy-btn", color="success", size="lg"),
-                            dbc.Button("Quick Therapy", id="open-therapy-modal", color="info", size="lg", className="ms-2")
                         ])
                     ])
                 ])

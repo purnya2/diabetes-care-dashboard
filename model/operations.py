@@ -333,7 +333,7 @@ def get_user(user_id):
         return User[int(user_id)]
     except (ValueError, TypeError):
         return None
-    except Exception:  # This catches ObjectNotFound and any other Pony ORM exceptions
+    except Exception:
         return None
 
 @db_session
@@ -905,7 +905,7 @@ def clear_compliance_alerts_for_patient(patient_id):
         return True
 
     except Exception as e:
-        print(f"❌ Error clearing compliance alerts: {e}")
+        print(f" Error clearing compliance alerts: {e}")
         return False
 
 @db_session
